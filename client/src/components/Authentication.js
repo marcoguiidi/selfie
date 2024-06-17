@@ -24,7 +24,7 @@ export default function Authentication(){
                 <label htmlFor="password">Password:</label>
                 <input type="password" id="password" name="password" required/>
                 <br />
-                <button type="submit">{title}</button>
+                <button type="submit" id="submitButton">{title}</button>
             </form>
             <button onClick={() => setNewUser(!newUser)}>{reverse}</button>
         </div>

@@ -222,7 +222,7 @@ app.delete('/events/:id', ensureAuthenticated, async (req, res) => {
   }
 });
 
-app.post( //https://betaweb.github.io/flashjs/ ma non implementato nella versione corrente
+app.post(
   "/login",
   passport.authenticate("local", {
     successRedirect: "/", // Redirect after successful login
@@ -256,3 +256,5 @@ app.post("/register", async (req, res) => {
     res.status(500).send("Registration failed."); // Handle registration errors
   }
 });
+
+// manca get di login e register 
