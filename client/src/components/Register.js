@@ -5,6 +5,7 @@ import '../css/Register.css'; // Importa il file CSS
 
 const Register = () => {
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/auth/register', { username, password });
+            await axios.post('/api/auth/register', { username, email, password });
             navigate('/login');
         } catch (err) {
             if (err.response && err.response.data) {
@@ -27,6 +28,15 @@ const Register = () => {
         <div className="register-container">
             <h2>Register</h2>
             <form onSubmit={handleRegister}>
+                <div>
+                    <label>Email:</label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
                 <div>
                     <label>Username:</label>
                     <input

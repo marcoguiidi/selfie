@@ -26,15 +26,18 @@ router.post('/login', async (req, res) => {
 
 // Register Route
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
         return res.status(400).json({ message: 'Username and password are required' });
     }
     try {
         let user = await User.findOne({ username });
         if (user) return res.status(400).json({ message: 'User already exists' });
 
-        user = new User({ username, password: await bcrypt.hash(password, 10) });
+        let mail = await User.findOne({ email });
+        if (mail) return res.status(400).json({ message: 'Email already in use' });
+
+        user = new User({ username, email, password: await bcrypt.hash(password, 10) });
         await user.save();
         res.status(201).json({ message: 'User registered' });
     } catch (err) {
