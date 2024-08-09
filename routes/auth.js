@@ -18,10 +18,12 @@ router.post('/login', async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+        
 
         const token = jwt.sign({ id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
         res.json({ token });
     } catch (err) {
+        console.error('Server Error:', err); // Aggiungi un log per l'errore
         res.status(500).json({ message: 'Server error' });
     }
 });

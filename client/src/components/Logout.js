@@ -8,16 +8,30 @@ const Logout = () => {
     useEffect(() => {
         const performLogout = async () => {
             try {
-                await axios.post('/api/auth/logout');
-                navigate('/login'); // Reindirizza alla pagina di login dopo il logout
+                // Ottieni il token dal localStorage
+                const token = localStorage.getItem('authToken');
+    
+                // Esegui il logout, inviando il token nell'header Authorization
+                await axios.post('/api/auth/logout', {}, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+    
+                // Rimuovi il token dal localStorage
+                localStorage.removeItem('authToken');
+    
+                // Reindirizza alla pagina di login dopo il logout
+                navigate('/login');
             } catch (err) {
                 console.error('Logout failed:', err);
                 // Gestisci l'errore se necessario
             }
         };
-
+    
         performLogout();
     }, [navigate]);
+    
 
     return (
         <div>

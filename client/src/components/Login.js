@@ -12,7 +12,13 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/auth/login', { username, password });
+            const response = await axios.post('/api/auth/login', { username, password });
+    
+            // Salva il token nel localStorage
+            const token = response.data.token;
+            localStorage.setItem('authToken', token);
+    
+            // Reindirizza l'utente a /home
             navigate('/home');
         } catch (err) {
             if (err.response && err.response.data) {
@@ -22,6 +28,7 @@ const Login = () => {
             }
         }
     };
+    
 
     return (
         <div className="login-container">
