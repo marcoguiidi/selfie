@@ -25,7 +25,6 @@ const Logout = () => {
                 navigate('/login');
             } catch (err) {
                 console.error('Logout failed:', err);
-                // Gestisci l'errore se necessario
             }
         };
     
@@ -35,7 +34,7 @@ const Logout = () => {
 
     return (
         <div>
-            <h1>Logging out...</h1>
+            <h1>Logging out...</h1> {/*  inutile */}
         </div>
     );
 };

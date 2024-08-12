@@ -12,6 +12,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
+            // prende il token di accesso
             const response = await axios.post('/api/auth/login', { username, password });
     
             // Salva il token nel localStorage
@@ -52,7 +53,7 @@ const Login = () => {
                         required
                     />
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {error && <p style={{ color: 'red' }}>{error}</p>} {/* messaggio di errore quando presente in rosso */}
                 <button type="submit">Login</button>
             </form>
             <p>

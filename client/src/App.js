@@ -9,11 +9,12 @@ import Logout from './components/Logout';
 const isAuthenticated = () => {
     // Verifica se c'è un token JWT nel localStorage
     const token = localStorage.getItem('authToken');
-    return !!token; // Ritorna true se il token esiste, altrimenti false
+    return !!token; // doppia negazione per avere il booleano
 };
 
-// Componente di routing protetto
+// Componente di routing protetto per tutte le route eseguibili solo con autenticazione
 const ProtectedRoute = ({ element }) => {
+    // se l'utente è autenticato allora vado all'elemento richiesto, altrimenti a /login
     return isAuthenticated() ? element : <Navigate to="/login" replace />;
 };
 
@@ -21,7 +22,7 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<Navigate to="/home" replace />} />  {/* uso navigate to al posto di dare il componenete per avere la route protetta */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/home" element={<ProtectedRoute element={<Home />} />} />

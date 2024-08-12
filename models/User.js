@@ -7,7 +7,8 @@ const userSchema = new Schema({
       unique: true, 
       required: true 
     },
-    email: {
+    // usiamo anche la mail per eventuali notifiche (?)
+    email: {    
       type: String,
       unique: true, 
       required: true

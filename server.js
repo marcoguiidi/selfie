@@ -30,7 +30,7 @@ app.use('/api/auth', authRoutes);
 
 // Middleware per proteggere le rotte
 const ensureAuthenticated = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization; // richiede l'autorizzazione nell'header
     const token = authHeader && authHeader.split(' ')[1]; // Ottieni il token dal header Authorization
 
     if (!token) {
@@ -53,15 +53,9 @@ app.get('/api/protected-route', ensureAuthenticated, (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-  // Serve the static build file for any route not handled by the API
+  // servela build statica, sovrascritto poi dalle routes di App.js
 app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 });
-
-app.post('/api/auth/logout', (req, res) => {
-  res.clearCookie('token'); // Cancella il cookie di autenticazione
-  res.status(200).json({ message: 'Logout successful' });
-});
-
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

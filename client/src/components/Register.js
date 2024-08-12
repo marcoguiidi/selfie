@@ -55,7 +55,7 @@ const Register = () => {
                         required
                     />
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {error && <p style={{ color: 'red' }}>{error}</p>} {/* eventuali errori printati */}
                 <button type="submit">Register</button>
             </form>
             <p>
