@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
-import "../css/EventFormModal.css"; // Assicurati di importare il file CSS
+import "../css/EventFormModal.css";
 
 Modal.setAppElement('#root'); // Necessario per accessibilità
 
@@ -25,38 +25,38 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave }) => {
     };
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onRequestClose={onRequestClose}
+        <Modal 
+            isOpen={isOpen} 
+            onRequestClose={onRequestClose} 
             contentLabel="Add Event"
             className="modal-content"
-            overlayClassName="modal-overlay" // Classe per l'overlay
+            overlayClassName="modal-overlay"
         >
-            <h2 className="modal-title">Add Event</h2>
-            <form onSubmit={handleSubmit} className="modal-form">
-                <div className="modal-form-group">
+            <h2>Add Event</h2>
+            <form onSubmit={handleSubmit}>
+                <div>
                     <label>Title:</label>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="modal-input" />
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 </div>
-                <div className="modal-form-group">
+                <div>
                     <label>Start Date:</label>
-                    <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required className="modal-input" />
+                    <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
                 </div>
-                <div className="modal-form-group">
+                <div>
                     <label>End Date:</label>
-                    <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required className="modal-input" />
+                    <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required />
                 </div>
-                <div className="modal-form-group">
+                <div>
                     <label>Description:</label>
-                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="modal-textarea" />
+                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
-                <div className="modal-form-group">
+                <div>
                     <label>Invited (comma-separated emails):</label>
-                    <input type="text" value={invited} onChange={(e) => setInvited(e.target.value)} className="modal-input" />
+                    <input type="text" value={invited} onChange={(e) => setInvited(e.target.value)} />
                 </div>
                 <div className="modal-buttons">
-                    <button type="submit" className="modal-button modal-save-button">Save</button>
-                    <button type="button" onClick={onRequestClose} className="modal-button modal-cancel-button">Cancel</button>
+                    <button type="submit" className="save">Save</button>
+                    <button type="button" className="cancel" onClick={onRequestClose}>Cancel</button>
                 </div>
             </form>
         </Modal>

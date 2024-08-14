@@ -1,0 +1,35 @@
+/* Navbar.css */
+
+.navbar {
+    background-color: transparent;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 10%;
+    z-index: 100;
+}
+
+.navbar-links {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar-link, .navbar-logout {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Colore per i pulsanti */
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-link:hover, .navbar-logout:hover {
+    background-color: #45a049;
+}
