@@ -24,9 +24,10 @@ mongoose.connect('mongodb+srv://marcoguiidi:marcoprova@cluster0.lfjcmtr.mongodb.
 
 // Import routes
 const authRoutes = require('./routes/auth');
-
-// Route middleware
 app.use('/api/auth', authRoutes);
+
+const eventRoutes = require('./routes/events');
+app.use('/api/events', eventRoutes);
 
 // Middleware per proteggere le rotte
 const ensureAuthenticated = (req, res, next) => {

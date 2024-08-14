@@ -8,6 +8,9 @@ const Home = () => {
             <Link to="/logout">
                 <button>Logout</button>
             </Link>
+            <Link to="/calendar">
+                <button>Calendar</button>
+            </Link>
         </div>
     );
 };

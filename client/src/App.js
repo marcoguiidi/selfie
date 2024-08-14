@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import Logout from './components/Logout';
+import Calendar from './components/Calendar';
 
 // Funzione per verificare se l'utente è autenticato
 const isAuthenticated = () => {
@@ -27,6 +28,7 @@ const App = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
                 <Route path="/logout" element={<ProtectedRoute element={<Logout />} />} />
+                <Route path="/calendar" element={<ProtectedRoute element={<Calendar />} />} />
                 <Route path='*' element={<ProtectedRoute element={<Home />} />} />
             </Routes>
         </Router>

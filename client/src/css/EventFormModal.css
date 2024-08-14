@@ -1,0 +1,95 @@
+/* Overlay della modale - copre tutto lo schermo */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Sfondo semitrasparente */
+    z-index: 1000;
+}
+
+/* Contenuto della modale */
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    outline: none; /* Rimuove il contorno della modale */
+}
+
+/* Stile per il titolo della modale */
+.modal-title {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+/* Stile per il form */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Gruppo del form */
+.modal-form-group {
+    margin-bottom: 15px;
+}
+
+/* Stile per gli input */
+.modal-input, 
+.modal-textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Stile per la textarea */
+.modal-textarea {
+    height: 100px;
+}
+
+/* Contenitore dei pulsanti */
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Stile per i pulsanti */
+.modal-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Stile per il pulsante Save */
+.modal-save-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.modal-save-button:hover {
+    background-color: #45a049;
+}
+
+/* Stile per il pulsante Cancel */
+.modal-cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.modal-cancel-button:hover {
+    background-color: #e53935;
+}
