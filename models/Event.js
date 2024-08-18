@@ -6,7 +6,8 @@ const EventSchema = new mongoose.Schema({
     end: { type: Date, required: true },
     description: { type: String },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    invited: [{ type: String }] // Array di email degli utenti invitati
+    invited: [String],
+    color: { type: String, default: '#007bff' }
 });
 
 module.exports = mongoose.model('Event', EventSchema);

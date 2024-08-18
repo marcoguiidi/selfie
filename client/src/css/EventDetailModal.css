@@ -31,12 +31,12 @@ button {
     font-size: 16px;
 }
 
-button.save {
+button.edit {
     background-color: #007bff;
     color: white;
 }
 
-button.save:hover {
+button.edit:hover {
     background-color: #0056b3;
 }
 

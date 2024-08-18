@@ -25,6 +25,19 @@ const ProtectedRoute = ({ element }) => {
     return isAuthenticated() ? element : <Navigate to="/login" replace />;
 };
 
+const ConditionalNavbar = () => {
+    const location = useLocation(); // React hook per ottenere il percorso attuale
+    const hideNavbarOnPaths = ['/login', '/register', '/home'];
+
+    // Nasconde la navbar solo nelle pagine di login, register e home
+    if (hideNavbarOnPaths.includes(location.pathname)) {
+        return null;
+    }
+
+    // Mostra la navbar se non siamo nelle pagine specificate
+    return isAuthenticated() ? <Navbar /> : null;
+};
+
 const App = () => {
 
     useEffect(() => {
@@ -40,9 +53,10 @@ const App = () => {
         };
     }, []);
 
+
     return (
         <Router>
-            <Navbar />
+            <ConditionalNavbar />
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />

@@ -11,25 +11,28 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) =
     }
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onRequestClose={onRequestClose} 
-            contentLabel="Event Details"
-            className="modal-content"
-            overlayClassName="modal-overlay"
-        >
-            <h2>Event Details</h2>
-            <p><strong>Title:</strong> {event.title}</p>
-            <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
-            <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
-            <p><strong>Description:</strong> {event.description}</p>
-            <p><strong>Invited:</strong> {event.invited.join(', ')}</p>
-            <div className="modal-buttons">
-                <button className="save" onClick={() => onEdit(event)}>Edit</button>
-                <button className="delete" onClick={() => onDelete(event._id)}>Delete</button>
-                <button className="cancel" onClick={onRequestClose}>Close</button>
-            </div>
-        </Modal>
+        <div className='page-content' >
+            <Modal 
+                isOpen={isOpen} 
+                onRequestClose={onRequestClose} 
+                contentLabel="Event Details"
+                className="modal-content"
+                overlayClassName="modal-overlay"
+            >
+                <h2>Event Details</h2>
+                <p><strong>Title:</strong> {event.title}</p>
+                <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
+                <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
+                <p><strong>Description:</strong> {event.description}</p>
+                <p><strong>Invited:</strong> {event.invited.join(', ')}</p>
+                <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
+                <div className="modal-buttons">
+                    <button className="edit" onClick={() => onEdit(event)}>Edit</button>
+                    <button className="delete" onClick={() => onDelete(event._id)}>Delete</button>
+                    <button className="cancel" onClick={onRequestClose}>Close</button>
+                </div>
+            </Modal>
+        </div>
     );
 };
 
