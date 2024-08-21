@@ -23,8 +23,8 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) =
                 <p><strong>Title:</strong> {event.title}</p>
                 <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
                 <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
-                <p><strong>Description:</strong> {event.description}</p>
-                <p><strong>Invited:</strong> {event.invited.join(', ')}</p>
+                {event.description.trim() && <p><strong>Description:</strong> {event.description}</p>}
+                {event.invited.length > 0 && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
                 <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
                 <div className="modal-buttons">
                     <button className="edit" onClick={() => onEdit(event)}>Edit</button>
