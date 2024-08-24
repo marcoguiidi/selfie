@@ -10,6 +10,7 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) =
         return null; // Non mostrare nulla se non c'è un evento
     }
 
+
     return (
         <div className='page-content' >
             <Modal 
@@ -24,7 +25,7 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) =
                 <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
                 <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
                 {event.description.trim() && <p><strong>Description:</strong> {event.description}</p>}
-                {event.invited.length > 0 && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
+                {event.invited.length > 0 && event.invited[0] !== "" && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
                 <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
                 <div className="modal-buttons">
                     <button className="edit" onClick={() => onEdit(event)}>Edit</button>
