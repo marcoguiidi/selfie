@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import axios from 'axios';
 import EventFormModal from './EventFormModal';
 import EventDetailModal from './EventDetailModal';
+import TimeMachineModal from './TimeMachineModal';  // Importa la modale TimeMachine
 
 const localizer = momentLocalizer(moment);
 
@@ -15,6 +16,8 @@ const MyCalendar = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [view, setView] = useState('month');
     const [date, setDate] = useState(new Date());
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [timeMachineOpen, setTimeMachineOpen] = useState(false); // Stato per TimeMachineModal
 
     useEffect(() => {
         fetchEvents();
@@ -42,9 +45,10 @@ const MyCalendar = () => {
 
     const handleSelectView = (view) => {
         setView(view);
+        console.log('Selected view:', view);
     };
 
-    const handleSelectSlot = () => {
+    const handleSelectSlot = (slotInfo) => {
         setSelectedEvent(null);
         setModalOpen(true);
     };
@@ -85,8 +89,6 @@ const MyCalendar = () => {
 
             setModalOpen(false);
             setSelectedEvent(null);
-            fetchEvents();
-            setView('month');
         } catch (err) {
             console.error('Error saving event:', err.response ? err.response.data : err.message);
         }
@@ -135,8 +137,29 @@ const MyCalendar = () => {
         }
     };
 
+    // Funzione per aprire il TimeMachineModal
+    const openTimeMachine = () => {
+        setTimeMachineOpen(true);
+    };
+
+    // Funzione per chiudere il TimeMachineModal e aggiornare la data
+    const handleSetDate = (date) => {
+        setCurrentDate(date);
+        setDate(date); // Aggiorna la vista del calendario
+        setTimeMachineOpen(false); // Chiudi la modale
+    };
+    
+    const resetToCurrentDate = () => {
+        const today = new Date();
+        setCurrentDate(today);
+        setDate(today); // Aggiorna la vista del calendario
+        setTimeMachineOpen(false); // Chiudi la modale
+    };
+    
+
     return (
         <div className="page-content">
+            <button onClick={openTimeMachine}>Open Time Machine</button> {/* Pulsante per aprire TimeMachine */}
             <Calendar
                 localizer={localizer}
                 events={events}
@@ -151,7 +174,13 @@ const MyCalendar = () => {
                 style={{ height: 500 }}
                 eventPropGetter={eventStyleGetter}
                 date={date}
-                onNavigate={(newDate) => setDate(newDate)}
+                onNavigate={(newDate, view, action) => {
+                    if (action === 'TODAY') {
+                        setDate(currentDate); // Imposta la data alla tua data personalizzata
+                    } else {
+                        setDate(newDate); // Navigazione normale
+                    }
+                }}
             />
             <EventFormModal
                 isOpen={modalOpen}
@@ -165,6 +194,12 @@ const MyCalendar = () => {
                 event={selectedEvent}
                 onEdit={handleEditEvent}
                 onDelete={handleDeleteEvent}
+            />
+            <TimeMachineModal
+                isOpen={timeMachineOpen}
+                onRequestClose={() => setTimeMachineOpen(false)}
+                onSetDate={handleSetDate}
+                onResetDate={resetToCurrentDate}
             />
         </div>
     );

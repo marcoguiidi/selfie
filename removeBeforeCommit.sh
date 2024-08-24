@@ -1,5 +1,13 @@
-rm -rf node_modules/
-cd client
-rm -rf node_modules/
-rm -rf build/
-cd ..
+rm -rf node_modules/ && \
+echo "node_modules removed" && \
+
+cd client && \
+rm -rf build/ && \
+echo "build removed" && \
+
+rm -rf node_modules/ && \
+echo "client/node_modules removed" && \
+
+
+cd .. && \
+echo "completed operation"
