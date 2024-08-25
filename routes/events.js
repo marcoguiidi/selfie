@@ -28,12 +28,13 @@ router.get('/', authenticateJWT, async (req, res) => {
 
 // Crea un nuovo evento
 router.post('/', authenticateJWT, async (req, res) => {
-    const { title, start, end, description, invited, color } = req.body;
+    const { title, start, end, deadline, description, invited, color } = req.body;
     try {
         const newEvent = new Event({
             title,
             start,
             end,
+            deadline,
             description,
             createdBy: req.user.id,
             invited: invited,
@@ -51,7 +52,7 @@ router.post('/', authenticateJWT, async (req, res) => {
 // Modifica un evento esistente
 router.put('/:id', authenticateJWT, async (req, res) => {
     try {
-        const { title, start, end, description, invited, color } = req.body;
+        const { title, start, end, deadline, description, invited, color } = req.body;
 
         const event = await Event.findById(req.params.id);
         if (event.createdBy.toString() !== req.user.id) {
@@ -59,7 +60,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
         }
         const updatedEvent = await Event.findByIdAndUpdate(
             req.params.id, 
-            { title, start, end, description, invited, color }, 
+            { title, start, end, deadline, description, invited, color }, 
             { new: true }
         );
 

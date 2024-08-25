@@ -60,6 +60,7 @@ const MyCalendar = () => {
                 title: event.title,
                 start: event.start,
                 end: event.end,
+                deadline: event.deadline,
                 description: event.description,
                 invited: event.invited,
                 color: event.color
@@ -88,6 +89,7 @@ const MyCalendar = () => {
             }
 
             setModalOpen(false);
+            setView('month');
             setSelectedEvent(null);
         } catch (err) {
             console.error('Error saving event:', err.response ? err.response.data : err.message);
