@@ -18,10 +18,9 @@ const MyCalendar = () => {
     const [date, setDate] = useState(new Date());
     const [currentDate, setCurrentDate] = useState(new Date());
     const [timeMachineOpen, setTimeMachineOpen] = useState(false); // Stato per TimeMachineModal
+    const [currentUser, setCurrentUser] = useState(null); 
 
-    useEffect(() => {
-        fetchEvents();
-    }, []);
+    
 
     const fetchEvents = async () => {
         try {
@@ -43,9 +42,29 @@ const MyCalendar = () => {
         }
     };
 
+    const fetchCurrentUser = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.get('/api/users/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setCurrentUser(response.data.email); // Imposta l'email dell'utente autenticato
+
+        } catch (err) {
+            console.error('Error fetching current user:', err.response ? err.response.data : err.message);
+        }
+    };
+
+    useEffect(() => {
+        fetchCurrentUser();
+        fetchEvents();
+    }, []);
+
     const handleSelectView = (view) => {
         setView(view);
-        console.log('Selected view:', view);
     };
 
     const handleSelectSlot = (slotInfo) => {
@@ -139,6 +158,34 @@ const MyCalendar = () => {
         }
     };
 
+    const handleDeclineEvent = async (eventId) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(`/api/events/${eventId}/decline`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+    
+            if (response.status === 200) {
+                // Aggiorna la lista degli eventi rimuovendo l'utente corrente
+                setEvents(prevEvents => 
+                    prevEvents.map(event => 
+                        event._id === eventId ? { 
+                            ...event, 
+                            invited: event.invited.filter(email => email !== currentUser.email)
+                        } : event
+                    )
+                );
+            }
+            setDetailModalOpen(false);
+            fetchEvents();
+        } catch (err) {
+            console.error('Error declining event:', err.response ? err.response.data : err.message);
+        }
+    };
+    
+
     // Funzione per aprire il TimeMachineModal
     const openTimeMachine = () => {
         setTimeMachineOpen(true);
@@ -196,6 +243,8 @@ const MyCalendar = () => {
                 event={selectedEvent}
                 onEdit={handleEditEvent}
                 onDelete={handleDeleteEvent}
+                currentUser={currentUser}
+                onDecline={handleDeclineEvent}
             />
             <TimeMachineModal
                 isOpen={timeMachineOpen}

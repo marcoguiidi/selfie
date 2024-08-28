@@ -29,6 +29,8 @@ app.use('/api/auth', authRoutes);
 const eventRoutes = require('./routes/events');
 app.use('/api/events', eventRoutes);
 
+const userRoutes = require('./routes/user');
+app.use('/api/users', userRoutes);
 // Middleware per proteggere le rotte
 const ensureAuthenticated = (req, res, next) => {
     const authHeader = req.headers.authorization; // richiede l'autorizzazione nell'header

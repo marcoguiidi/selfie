@@ -4,15 +4,17 @@ import "../css/EventDetailModal.css";
 
 Modal.setAppElement('#root'); // Necessario per accessibilità
 
-const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) => {
+const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, currentUser, onDecline }) => {
     // Verifica se l'evento è definito
     if (!event) {
         return null; // Non mostrare nulla se non c'è un evento
     }
 
+    // Verifica se l'utente corrente è il creatore dell'evento
+    const isCreator = event.createdBy.email === currentUser;
 
     return (
-        <div className='page-content' >
+        <div className='page-content'>
             <Modal 
                 isOpen={isOpen} 
                 onRequestClose={onRequestClose} 
@@ -32,18 +34,18 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete }) =
                         <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
                     </div>
                 )}
-                {/* { !event.deadline && (
-                    <div>
-                        <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
-                        <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
-                    </div>
-                )} */}
                 {event.description.trim() && <p><strong>Description:</strong> {event.description}</p>}
                 {event.invited.length > 0 && event.invited[0] !== "" && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
                 <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
                 <div className="modal-buttons">
-                    <button className="edit" onClick={() => onEdit(event)}>Edit</button>
-                    <button className="delete" onClick={() => onDelete(event._id)}>Delete</button>
+                    {isCreator ? (
+                        <>
+                            <button className="edit" onClick={() => onEdit(event)}>Edit</button>
+                            <button className="delete" onClick={() => onDelete(event._id)}>Delete</button>
+                        </>
+                    ) : (
+                        <button className="decline" onClick={() => onDecline(event._id)}>Decline</button>
+                    )}
                     <button className="cancel" onClick={onRequestClose}>Close</button>
                 </div>
             </Modal>

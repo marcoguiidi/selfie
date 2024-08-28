@@ -53,6 +53,7 @@ router.post('/logout', (req, res) => {
     res.clearCookie('token'); // Cancella il cookie di autenticazione
     res.status(200).json({ message: 'Logout successful' });
   });
+
   
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
@@ -82,6 +83,33 @@ router.delete('/:id', authenticateJWT, async (req, res) => {
         res.json({ message: 'Event deleted' });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.post('/:eventId/decline', authenticateJWT, async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        // Trova l'evento per ID
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Verifica se l'utente è invitato
+        if (!event.invited.includes(req.user.email)) {
+            return res.status(400).json({ message: 'User not invited to this event' });
+        }
+
+        // Rimuovi l'utente dalla lista degli invitati
+        event.invited = event.invited.filter(inviteId => inviteId.toString() !== req.user.email);
+        
+        await event.save();
+
+        res.json({ message: 'Invitation declined successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 });
 
