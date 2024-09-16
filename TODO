@@ -1,6 +1,5 @@
 CALENDARIO:
     - aggiungere eventi con scadenza
-        - impostare scadenda
         - avvisi e diversa visualizzazione per eventi scaduti
     - aggiungere ripetizioni agli eventi
     - aggiungere notifiche agli eventi

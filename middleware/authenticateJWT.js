@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Assumi che tu abbia un modello User
+const User = require('../models/User');
 
 const authenticateJWT = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1]; // Estrarre il token dal header
@@ -16,7 +16,7 @@ const authenticateJWT = (req, res, next) => {
 
             req.user = {
                 id: user.id,
-                email: foundUser.email // Aggiungi l'email all'oggetto `req.user`
+                email: foundUser.email 
             };
 
             next();

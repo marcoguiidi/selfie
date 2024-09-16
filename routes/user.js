@@ -1,8 +1,6 @@
-// routes/users.js
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Assumiamo che tu abbia un modello User
+const User = require('../models/User'); 
 const authenticateJWT = require('../middleware/authenticateJWT');
 
 // Endpoint per ottenere i dettagli dell'utente corrente
