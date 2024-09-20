@@ -68,7 +68,7 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event }) => {
         onRequestClose(); // Chiudi la modale dopo il salvataggio
     };
 
-    const colorOptions = ['#007bff', 'red', 'green', 'orange', 'gray'];
+    const colorOptions = ['#007bff', 'green', 'orange', 'gray', 'blue'];
     
 
     return (
