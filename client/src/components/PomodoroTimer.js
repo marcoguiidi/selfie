@@ -5,205 +5,173 @@ import TimeMachineModal from './TimeMachineModal';
 
 const AdvancedPomodoroTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [duration, setDuration] = useState(null);
+  const [duration, setDuration] = useState(25 * 60);
   const [currentSession, setCurrentSession] = useState(null);
   const [timerDisplay, setTimerDisplay] = useState('25:00');
-  const [timerStatus, setTimerStatus] = useState('READY');
+  const [timerStatus, setTimerStatus] = useState('LOADING');
   const [error, setError] = useState(null);
   const [isTimeMachineOpen, setIsTimeMachineOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentCycle, setCurrentCycle] = useState(1);
+
+  const getAuthConfig = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+  });
 
   const debugLog = (...messages) => {
-    if (process.env.NODE_ENV === 'development') {
+    //if (process.env.NODE_ENV === 'development') {
       console.log(...messages);
-    }
-  };
-
-  const getAuthConfig = () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return {
-      headers: { Authorization: `Bearer ${token}` }
-    };
+    //}
   };
 
   const fetchSessionData = useCallback(async () => {
-    debugLog('Inizio recupero dati ultima sessione...');
+    setTimerStatus('LOADING');
     try {
-      const config = getAuthConfig();
-      const response = await axios.get('/api/pomodoro/last', config);
+      const response = await axios.get(`/api/pomodoro/last?date=${currentDate.toISOString()}`, getAuthConfig());
       debugLog('Dati sessione ricevuti:', response.data);
       if (response.data && !response.data.completed) {
         setCurrentSession(response.data);
         initializeTimer(response.data);
       } else {
-        setCurrentSession(null);
-        setDuration(null);
-        updateTimerDisplay(25 * 60);
-        updateSessionState('READY');
+        resetTimer();
       }
     } catch (error) {
-      console.error('Errore nel recupero dell\'ultima sessione:', error);
-      setError('Errore nel recupero della sessione. Assicurati di essere autenticato.');
+      console.error('Error fetching session:', error);
+      // setError('Failed to fetch session data.');
+      resetTimer();
     }
   }, [currentDate]);
 
   const initializeTimer = useCallback((data) => {
-    const now = currentDate;
+    debugLog('Inizializzazione timer con dati:', data);
+    const now = new Date();
     const startTime = new Date(data.startTime);
     const elapsed = (now.getTime() - startTime.getTime()) / 1000;
 
     let sessionState;
+    let newDuration;
+
     if (data.pausedTime) {
       sessionState = 'PAUSED';
-    } else if (!data.completed) {
-      sessionState = data.intervalTime ? 'INTERVAL' : 'ACTIVE';
+      const pausedDuration = (now.getTime() - new Date(data.pausedTime).getTime()) / 1000;
+      newDuration = data.durationMinutes * 60 - (elapsed - pausedDuration - data.totalPausedDuration);
+    } else if (data.intervalTime) {
+      sessionState = 'INTERVAL';
+      const intervalTime = new Date(data.intervalTime);
+      const intervalElapsed = (now.getTime() - intervalTime.getTime()) / 1000;
+      const intervalMinutes = data.cycle % 4 === 0 ? data.longBreakMinutes : data.breakMinutes;
+      newDuration = intervalMinutes * 60 - intervalElapsed;
     } else {
-      sessionState = 'COMPLETED';
+      sessionState = 'ACTIVE';
+      newDuration = data.durationMinutes * 60 - (elapsed - data.totalPausedDuration);
     }
 
-    let newDuration;
-    switch (sessionState) {
-      case 'PAUSED':
-        newDuration = data.durationMinutes * 60 - (elapsed - data.totalPausedDuration);
-        break;
-      case 'INTERVAL':
-        const intervalTime = new Date(data.intervalTime);
-        const intervalElapsed = (now.getTime() - intervalTime.getTime()) / 1000;
-        const intervalMinutes = data.cycle % 4 === 0 ? data.longBreakMinutes : data.breakMinutes;
-        newDuration = intervalMinutes * 60 - intervalElapsed;
-        break;
-      case 'ACTIVE':
-        newDuration = data.durationMinutes * 60 - (elapsed - data.totalPausedDuration);
-        break;
-      case 'COMPLETED':
-        newDuration = 0;
-        break;
-      default:
-        newDuration = data.durationMinutes * 60;
-    }
-
-    setDuration(Math.max(0, newDuration));
-    updateTimerDisplay(Math.max(0, newDuration));
-    updateSessionState(sessionState);
+    setDuration(Math.max(0, Math.round(newDuration)));
+    updateTimerDisplay(Math.max(0, Math.round(newDuration)));
+    setTimerStatus(sessionState);
     setIsRunning(sessionState === 'ACTIVE' || sessionState === 'INTERVAL');
-  }, [currentDate]);
+    setCurrentCycle(data.cycle);
+    debugLog('Timer inizializzato:', { sessionState, newDuration, cycle: data.cycle });
+  }, []);
 
-  const updateSessionState = (state) => {
-    setTimerStatus(state);
+  const resetTimer = () => {
+    setCurrentSession(null);
+    setDuration(25 * 60);
+    setTimerStatus('READY');
+    setCurrentCycle(1);
+    setIsRunning(false);
+    updateTimerDisplay(25 * 60);
+    debugLog('Timer resettato');
   };
 
   const startNewSession = async () => {
+    debugLog('Avvio di una nuova sessione...');
     try {
-      const config = getAuthConfig();
-      const response = await axios.post('/api/pomodoro/start', {}, config);
+      const response = await axios.post('/api/pomodoro/start', {}, getAuthConfig());
       setCurrentSession(response.data);
       setDuration(response.data.durationMinutes * 60);
-      updateTimerDisplay(response.data.durationMinutes * 60);
-      updateSessionState('ACTIVE');
+      setTimerStatus('ACTIVE');
       setIsRunning(true);
+      setCurrentCycle(response.data.cycle);
+      updateTimerDisplay(response.data.durationMinutes * 60);
+      debugLog('Nuova sessione avviata:', response.data);
     } catch (error) {
-      console.error('Errore nell\'avvio della nuova sessione:', error);
-      setError('Errore nell\'avvio della sessione. Assicurati di essere autenticato.');
+      console.error('Error starting new session:', error);
+      setError('Failed to start new session.');
     }
   };
 
   const pauseSession = async () => {
-    if (!currentSession) {
-      console.error('Nessuna sessione attiva da mettere in pausa.');
-      return;
-    }
+    if (!currentSession) return;
+    debugLog('Messa in pausa della sessione...');
     try {
       const response = await axios.patch(`/api/pomodoro/${currentSession._id}/pause`, { action: 'pause' }, getAuthConfig());
       setCurrentSession(response.data);
-      updateSessionState('PAUSED');
+      setTimerStatus('PAUSED');
       setIsRunning(false);
+      debugLog('Sessione messa in pausa:', response.data);
     } catch (error) {
-      console.error('Errore nel mettere in pausa la sessione:', error);
+      console.error('Error pausing session:', error);
+      setError('Failed to pause session.');
     }
   };
 
   const resumeSession = async () => {
-    if (!currentSession) {
-      console.error('Nessuna sessione attiva da riprendere.');
-      return;
-    }
+    if (!currentSession) return;
+    debugLog('Ripresa della sessione...');
     try {
       const response = await axios.patch(`/api/pomodoro/${currentSession._id}/resume`, { action: 'resume' }, getAuthConfig());
       setCurrentSession(response.data);
-      updateSessionState('ACTIVE');
+      setTimerStatus('ACTIVE');
       setIsRunning(true);
+      debugLog('Sessione ripresa:', response.data);
     } catch (error) {
-      console.error('Errore nella ripresa della sessione:', error);
+      console.error('Error resuming session:', error);
+      setError('Failed to resume session.');
     }
   };
 
   const completeSession = async (state) => {
-    if (!currentSession) {
-      console.error('Nessuna sessione attiva da completare.');
-      return;
-    }
+    if (!currentSession) return;
+    debugLog(`Completamento della sessione: ${state}`);
     try {
-      await axios.patch(`/api/pomodoro/${currentSession._id}/stop`, { action: 'stop', state: state }, getAuthConfig());
-      setIsRunning(false);
-      setDuration(null);
-      setCurrentSession(null);
-      updateSessionState(state.toUpperCase());
+      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/stop`, { action: 'stop', state }, getAuthConfig());
+      if (state === 'interval') {
+        setCurrentSession(response.data);
+        initializeTimer(response.data);
+      } else {
+        resetTimer();
+      }
+      debugLog(`Sessione completata con stato: ${state}`, response.data);
     } catch (error) {
-      console.error('Errore nel completamento della sessione:', error);
+      console.error('Error completing session:', error);
+      setError('Failed to complete session.');
     }
   };
 
   const updateTimerDisplay = (time) => {
     const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    setTimerDisplay(`${minutes}:${seconds < 10 ? '0' + seconds : seconds}`);
+    const seconds = time % 60;
+    setTimerDisplay(`${minutes}:${seconds.toString().padStart(2, '0')}`);
   };
 
   useEffect(() => {
     fetchSessionData();
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && isRunning) {
-        pauseSession();
-      }
-    };
-
-    const handleBeforeUnload = (event) => {
-      if (isRunning) {
-        pauseSession();
-        event.preventDefault();
-        event.returnValue = '';
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [fetchSessionData, isRunning]);
+  }, [fetchSessionData]);
 
   useEffect(() => {
     let timer;
-    if (isRunning && duration !== null) {
+    if (isRunning && duration > 0) {
       timer = setInterval(() => {
         setDuration((prevDuration) => {
-          if (prevDuration <= 0) {
+          const newDuration = prevDuration - 1;
+          updateTimerDisplay(newDuration);
+          if (newDuration <= 0) {
             clearInterval(timer);
-            if (currentSession.intervalTime) {
-              completeSession('completed');
-            } else {
-              completeSession('interval');
-            }
+            completeSession(currentSession.intervalTime ? 'completed' : 'interval');
             return 0;
           }
-          updateTimerDisplay(prevDuration - 1);
-          return prevDuration - 1;
+          return newDuration;
         });
       }, 1000);
     }
@@ -211,21 +179,15 @@ const AdvancedPomodoroTimer = () => {
   }, [isRunning, duration, currentSession]);
 
   const handleStartResume = () => {
-    if (!isRunning && currentSession) {
-      resumeSession();
-    } else if (!currentSession) {
+    if (timerStatus === 'READY') {
       startNewSession();
+    } else if (timerStatus === 'PAUSED') {
+      resumeSession();
     }
   };
 
   const handleSetDate = (newDate) => {
     setCurrentDate(newDate);
-    setIsTimeMachineOpen(false);
-    fetchSessionData();
-  };
-
-  const resetToCurrentDate = () => {
-    setCurrentDate(new Date());
     setIsTimeMachineOpen(false);
     fetchSessionData();
   };
@@ -236,8 +198,9 @@ const AdvancedPomodoroTimer = () => {
       {error && <div className="error-message">{error}</div>}
       <div className="timer-display">{timerDisplay}</div>
       <div className="timer-status">{timerStatus}</div>
-      <button onClick={handleStartResume} disabled={isRunning}>
-        {currentSession && !isRunning ? 'Resume' : 'Start'}
+      <div className="cycle-display">Cycle: {currentCycle}</div>
+      <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
+        {timerStatus === 'PAUSED' ? 'Resume' : 'Start'}
       </button>
       <button onClick={pauseSession} disabled={!isRunning}>Pause</button>
       <button onClick={() => completeSession('aborted')} disabled={!currentSession}>Stop</button>
@@ -246,7 +209,7 @@ const AdvancedPomodoroTimer = () => {
         isOpen={isTimeMachineOpen}
         onRequestClose={() => setIsTimeMachineOpen(false)}
         onSetDate={handleSetDate}
-        onResetDate={resetToCurrentDate}
+        onResetDate={() => handleSetDate(new Date())}
       />
     </div>
   );

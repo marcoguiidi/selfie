@@ -1,19 +1,19 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const PomodoroSessionSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+const pomodoroSessionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  durationMinutes: { type: Number, default: 25 },
+  breakMinutes: { type: Number, default: 5 },
+  longBreakMinutes: { type: Number, default: 15 },
+  cycle: { type: Number, default: 1 },
   startTime: { type: Date, required: true },
   pausedTime: { type: Date },
   intervalTime: { type: Date },
   totalPausedDuration: { type: Number, default: 0 },
+  maxPausedDuration: { type: Number, default: 1800 }, // 30 minuti in secondi
+  endTime: { type: Date },
   completed: { type: Boolean, default: false },
-  aborted: { type: Boolean, default: false },
-  durationMinutes: { type: Number, required: true },
-  breakMinutes: { type: Number, required: true },
-  longBreakMinutes: { type: Number, required: true },
-  cycle: { type: Number, default: 1 },
-  maxPausedDuration: { type: Number, required: true }
+  effectiveStudyTime: { type: Number },
 });
 
-module.exports = mongoose.model('PomodoroSession', PomodoroSessionSchema);
+module.exports = mongoose.model('PomodoroSession', pomodoroSessionSchema);
