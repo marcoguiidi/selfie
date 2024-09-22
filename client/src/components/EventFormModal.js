@@ -70,9 +70,15 @@ return (
         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
       <div>
-        <label>
-          <input type="checkbox" checked={isDeadline} onChange={(e) => setIsDeadline(e.target.checked)} />
-          Is Deadline
+        <label style={{ display: 'flex', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={() => setIsDeadline(!isDeadline)}
+            className={`deadline-button ${isDeadline ? 'active' : ''}`}
+            style={{ marginRight: '8px' }} // Space between button and label
+          >
+            {isDeadline ? 'Deadline On' : 'Deadline Off'}
+          </button>
         </label>
       </div>
       <div>

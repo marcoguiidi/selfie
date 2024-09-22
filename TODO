@@ -1,6 +1,3 @@
 CALENDARIO:
-    - aggiungere eventi con scadenza
-        - avvisi e diversa visualizzazione per eventi scaduti
     - aggiungere ripetizioni agli eventi
     - aggiungere notifiche agli eventi
-    - aggiungere geolocalizzazione

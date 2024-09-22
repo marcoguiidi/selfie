@@ -1,72 +1,74 @@
-import React from 'react';
-import { useEffect } from'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import axios from 'axios';
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import Logout from './components/Logout';
 import MyCalendar from './components/Calendar';
 import Navbar from './components/Navbar';
-
-
-
-
-// Funzione per verificare se l'utente è autenticato
-const isAuthenticated = () => {
-    // Verifica se c'è un token JWT nel localStorage
-    const token = localStorage.getItem('authToken');
-    return !!token; // doppia negazione per avere il booleano
-};
-
-// Componente di routing protetto per tutte le route eseguibili solo con autenticazione
-const ProtectedRoute = ({ element }) => {
-    // se l'utente è autenticato allora vado all'elemento richiesto, altrimenti a /login
-    return isAuthenticated() ? element : <Navigate to="/login" replace />;
-};
-
-const ConditionalNavbar = () => {
-    const location = useLocation(); // React hook per ottenere il percorso attuale
-    const hideNavbarOnPaths = ['/login', '/register', '/home'];
-
-    // Nasconde la navbar solo nelle pagine di login, register e home
-    if (hideNavbarOnPaths.includes(location.pathname)) {
-        return null;
-    }
-
-    // Mostra la navbar se non siamo nelle pagine specificate
-    return isAuthenticated() ? <Navbar /> : null;
-};
+import PomodoroTimer from './components/PomodoroTimer';
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Rimuove il token quando l'utente chiude o ricarica la pagina
-        const handleUnload = () => {
-            localStorage.removeItem('authToken');
-        };
-    
-        window.addEventListener('beforeunload', handleUnload);
-    
-        return () => {
-            window.removeEventListener('beforeunload', handleUnload);
-        };
-    }, []);
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          // Verifica il token con il backend
+          await axios.get('/api/auth/verify', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('authToken');
+        }
+      }
+      setLoading(false);
+    };
 
+    verifyToken();
+  }, []);
 
-    return (
-        <Router>
-            <ConditionalNavbar />
-            <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
-                <Route path="/logout" element={<ProtectedRoute element={<Logout />} />} />
-                <Route path="/calendar" element={<ProtectedRoute element={<MyCalendar />} />} />
-                <Route path="*" element={<Navigate to="/home" replace />} />  {/* uso navigate to al posto di dare il componenete per avere la route protetta */}
-            </Routes>
-        </Router>
-    );
+  // Componente di routing protetto
+  const ProtectedRoute = ({ element }) => {
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+    return isAuthenticated ? element : <Navigate to="/login" replace />;
+  };
+
+  const ConditionalNavbar = () => {
+    const hideNavbarOnPaths = ['/login', '/register', '/home'];
+    const location = window.location.pathname;
+    if (hideNavbarOnPaths.includes(location)) {
+      return null;
+    }
+    return <Navbar />;
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <Router>
+      <ConditionalNavbar />
+      <Routes>
+        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
+        <Route path="/logout" element={<ProtectedRoute element={<Logout setIsAuthenticated={setIsAuthenticated} />} />} />
+        <Route path="/calendar" element={<ProtectedRoute element={<MyCalendar />} />} />
+        <Route path="/pomodoro" element={<ProtectedRoute element={<PomodoroTimer />} />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
+    </Router>
+  );
 };
 
 export default App;

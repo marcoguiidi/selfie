@@ -35,7 +35,7 @@ const Navbar = () => {
             <div ref={navbarMenuRef} className={`navbar-menu ${isOpen ? 'open' : ''}`}>
                 <ul>
                     <li>
-                        <Link to="/home">Home</Link>
+                        <Link to="/home" >Home</Link>
                     </li>
                     <li>
                         <Link to="/logout">Logout</Link>
