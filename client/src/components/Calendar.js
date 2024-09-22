@@ -19,7 +19,7 @@ const MyCalendar = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [timeMachineOpen, setTimeMachineOpen] = useState(false); // Stato per TimeMachineModal
     const [currentUser, setCurrentUser] = useState(null); 
-
+    const [initialStart, setInitialStart] = useState(null);
     
 
     const fetchEvents = async () => {
@@ -69,65 +69,78 @@ const MyCalendar = () => {
 
     const handleSelectSlot = (slotInfo) => {
         setSelectedEvent(null);
+        setInitialStart(moment(slotInfo.start).toDate());
         setModalOpen(true);
-    };
+      };
+    
+      const handleCloseModal = () => {
+        setModalOpen(false);
+        setInitialStart(null);
+        setSelectedEvent(null);
+      };
 
     const handleSaveEvent = async (event) => {
         try {
-            const token = localStorage.getItem('authToken');
-            const eventData = {
-                title: event.title,
-                start: event.start,
-                end: event.end,
-                deadline: event.deadline,
-                description: event.description,
-                invited: event.invited,
-                color: event.color
-            };
-
-            if (selectedEvent && selectedEvent._id) {
-                const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setEvents((prevEvents) =>
-                    prevEvents.map((e) =>
-                        e._id === selectedEvent._id ? { ...response.data } : e
-                    )
-                );
-            } else {
-                const response = await axios.post('/api/events', eventData, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setEvents([...events, { ...response.data }]);
-            }
-
-            setModalOpen(false);
-            setView('month');
-            setSelectedEvent(null);
+          const token = localStorage.getItem('authToken');
+          const eventData = {
+            title: event.title,
+            start: event.start,
+            end: event.isDeadline ? event.start : event.end,
+            isDeadline: event.isDeadline,
+            description: event.description,
+            invited: event.invited,
+            color: event.color
+          };
+    
+          if (selectedEvent && selectedEvent._id) {
+            const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setEvents((prevEvents) =>
+              prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
+            );
+          } else {
+            const response = await axios.post('/api/events', eventData, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setEvents([...events, { ...response.data }]);
+          }
+          handleCloseModal();
         } catch (err) {
-            console.error('Error saving event:', err.response ? err.response.data : err.message);
+          console.error('Error saving event:', err.response ? err.response.data : err.message);
         }
-    };
+      };
 
     const eventStyleGetter = (event) => {
-        const backgroundColor = event.color || '#007bff';
-        return {
-            style: {
-                backgroundColor,
-                borderRadius: '5px',
-                opacity: 0.8,
-                color: 'white',
-                border: '0',
-                display: 'block'
-            }
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end);
+        const isExpired = event.isDeadline && currentDate > eventEnd;
+        const isPast = currentDate > eventEnd;
+        
+        let backgroundColor = event.color || '#007bff';
+        if (isExpired) {
+            backgroundColor = '#d9534f';
+        } else if (isPast) {
+            backgroundColor = '#6c757d';
+        }
+
+        const style = {
+            backgroundColor,
+            borderRadius: '5px',
+            opacity: 0.8,
+            color: 'white',
+            border: '0',
+            display: 'block'
         };
+
+        if (event.isDeadline) {
+            style.borderLeft = '5px solid #ffc107';
+        }
+
+        return { style };
     };
+    
+    
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
@@ -186,74 +199,74 @@ const MyCalendar = () => {
     };
     
 
-    // Funzione per aprire il TimeMachineModal
     const openTimeMachine = () => {
         setTimeMachineOpen(true);
     };
+    
+    const handleSetDate = (newDate) => {
+        setCurrentDate(newDate);
+        setDate(newDate);
+        setTimeMachineOpen(false);
+    };
 
-    // Funzione per chiudere il TimeMachineModal e aggiornare la data
-    const handleSetDate = (date) => {
-        setCurrentDate(date);
-        setDate(date); // Aggiorna la vista del calendario
-        setTimeMachineOpen(false); // Chiudi la modale
+    const resetToCurrentDate = () => {
+        const now = new Date();
+        setCurrentDate(now);
+        setDate(now);
+        setTimeMachineOpen(false);
     };
     
-    const resetToCurrentDate = () => {
-        const today = new Date();
-        setCurrentDate(today);
-        setDate(today); // Aggiorna la vista del calendario
-        setTimeMachineOpen(false); // Chiudi la modale
-    };
     
 
     return (
         <div className="page-content">
-            <button onClick={openTimeMachine}>Open Time Machine</button> {/* Pulsante per aprire TimeMachine */}
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                selectable
-                views={['month', 'week', 'day', 'agenda']}
-                view={view}
-                onView={handleSelectView}
-                onSelectSlot={handleSelectSlot}
-                onSelectEvent={handleSelectEvent}
-                style={{ height: 500 }}
-                eventPropGetter={eventStyleGetter}
-                date={date}
-                onNavigate={(newDate, view, action) => {
-                    if (action === 'TODAY') {
-                        setDate(currentDate); // Imposta la data alla tua data personalizzata
-                    } else {
-                        setDate(newDate); // Navigazione normale
-                    }
-                }}
-            />
-            <EventFormModal
-                isOpen={modalOpen}
-                onRequestClose={() => setModalOpen(false)}
-                onSave={handleSaveEvent}
-                event={selectedEvent}
-            />
-            <EventDetailModal
-                isOpen={detailModalOpen}
-                onRequestClose={() => setDetailModalOpen(false)}
-                event={selectedEvent}
-                onEdit={handleEditEvent}
-                onDelete={handleDeleteEvent}
-                currentUser={currentUser}
-                onDecline={handleDeclineEvent}
-            />
-            <TimeMachineModal
-                isOpen={timeMachineOpen}
-                onRequestClose={() => setTimeMachineOpen(false)}
-                onSetDate={handleSetDate}
-                onResetDate={resetToCurrentDate}
-            />
+          <button onClick={openTimeMachine}>Open Time Machine</button>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            views={['month', 'week', 'day', 'agenda']}
+            view={view}
+            onView={handleSelectView}
+            onSelectSlot={handleSelectSlot}
+            onSelectEvent={handleSelectEvent}
+            style={{ height: 500 }}
+            eventPropGetter={eventStyleGetter}
+            date={date}
+            onNavigate={(newDate, view, action) => {
+              if (action === 'TODAY') {
+                setDate(currentDate);
+              } else {
+                setDate(newDate);
+              }
+            }}
+          />
+    <EventFormModal
+        isOpen={modalOpen}
+        onRequestClose={handleCloseModal}
+        onSave={handleSaveEvent}
+        event={selectedEvent}
+        initialStart={initialStart}
+      />
+          <EventDetailModal
+            isOpen={detailModalOpen}
+            onRequestClose={() => setDetailModalOpen(false)}
+            event={selectedEvent}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+            currentUser={currentUser}
+            onDecline={handleDeclineEvent}
+          />
+          <TimeMachineModal
+            isOpen={timeMachineOpen}
+            onRequestClose={() => setTimeMachineOpen(false)}
+            onSetDate={handleSetDate}
+            onResetDate={resetToCurrentDate}
+          />
         </div>
-    );
+      );
 };
 
 export default MyCalendar;

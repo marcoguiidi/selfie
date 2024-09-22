@@ -29,48 +29,48 @@ router.get('/', authenticateJWT, async (req, res) => {
 
 // Crea un nuovo evento
 router.post('/', authenticateJWT, async (req, res) => {
-    const { title, start, end, deadline, description, invited, color } = req.body;
+    const { title, start, end, isDeadline, description, invited, color } = req.body;
     try {
-        const newEvent = new Event({
-            title,
-            start,
-            end,
-            deadline,
-            description,
-            createdBy: req.user.id,
-            invited: invited,
-            color
-        });
-
-        const savedEvent = await newEvent.save();
-        
-        res.status(201).json(newEvent);
+      const newEvent = new Event({
+        title,
+        start,
+        end,
+        isDeadline,
+        description,
+        createdBy: req.user.id,
+        invited,
+        color,
+        status: 'active'
+      });
+      const savedEvent = await newEvent.save();
+      res.status(201).json(newEvent);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: 'Server error' });
     }
-});
+  });
 
 // Modifica un evento esistente
-router.put('/:id', authenticateJWT, async (req, res) => {
+router.put('/:id/status', authenticateJWT, async (req, res) => {
     try {
-        const { title, start, end, deadline, description, invited, color } = req.body;
-
-        const event = await Event.findById(req.params.id);
-        if (event.createdBy.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Unauthorized' });
-        }
-        const updatedEvent = await Event.findByIdAndUpdate(
-            req.params.id, 
-            { title, start, end, deadline, description, invited, color }, 
-            { new: true }
-        );
-
-        res.json(updatedEvent);
+      const event = await Event.findById(req.params.id);
+      if (!event) {
+        return res.status(404).json({ message: 'Event not found' });
+      }
+      
+      const now = new Date();
+      if (event.isDeadline && event.end < now) {
+        event.status = 'expired';
+      } else {
+        event.status = 'active';
+      }
+      
+      await event.save();
+      res.json(event);
     } catch (err) {
-        console.error('Update Error:', err);
-        res.status(500).json({ message: 'Server error' });
+      console.error('Update Status Error:', err);
+      res.status(500).json({ message: 'Server error' });
     }
-});
+  });
 
 // Elimina un evento
 router.delete('/:id', authenticateJWT, async (req, res) => {
