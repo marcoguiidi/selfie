@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Category = require('../models/Category');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateJWT = require('../middleware/authenticateJWT');
@@ -38,6 +39,11 @@ router.post('/register', async (req, res) => {
     user = new User({ username, email, password: await bcrypt.hash(password, 10) });
     await user.save();
     res.status(201).json({ message: 'User registered' });
+    const defaultCategories = ['Unibo', 'Altro'];
+    defaultCategories.forEach(async (cat) => {
+      const category = new Category({ name: cat, createdBy: user._id });
+      await category.save();
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

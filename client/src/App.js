@@ -8,6 +8,7 @@ import Logout from './components/Logout';
 import MyCalendar from './components/Calendar';
 import Navbar from './components/Navbar';
 import PomodoroTimer from './components/PomodoroTimer';
+import NoteViewer from './components/NoteViewer';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -65,6 +66,7 @@ const App = () => {
         <Route path="/logout" element={<ProtectedRoute element={<Logout setIsAuthenticated={setIsAuthenticated} />} />} />
         <Route path="/calendar" element={<ProtectedRoute element={<MyCalendar />} />} />
         <Route path="/pomodoro" element={<ProtectedRoute element={<PomodoroTimer />} />} />
+        <Route path="/notes" element={<ProtectedRoute element={<NoteViewer />} />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </Router>

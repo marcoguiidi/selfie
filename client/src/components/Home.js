@@ -14,6 +14,9 @@ const Home = () => {
             <Link to="/pomodoro">
                 <button>Pomodoro</button>
             </Link>
+            <Link to="/notes">
+                <button>Note</button>
+            </Link>
         </div>
     );
 };

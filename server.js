@@ -34,6 +34,13 @@ app.use('/api/users', userRoutes);
 
 const pomodoroRoutes = require('./routes/pomodoro');
 app.use('/api/pomodoro', pomodoroRoutes);
+
+const noteRoutes = require('./routes/notes');
+app.use('/api/notes', noteRoutes);
+
+const categoriesRouter = require('./routes/category');
+app.use('/api/categories', categoriesRouter);
+
 // Middleware per proteggere le rotte
 const ensureAuthenticated = (req, res, next) => {
     const authHeader = req.headers.authorization; // richiede l'autorizzazione nell'header
