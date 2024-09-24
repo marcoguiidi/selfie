@@ -26,11 +26,11 @@ router.post('/start', authenticateJWT, async (req, res) => {
     if (lastCompletedSession && lastCompletedSession.endTime) {
       const timeSinceLastSessionEnd = (now - lastCompletedSession.endTime) / 1000 / 60;
       if (timeSinceLastSessionEnd < lastCompletedSession.maxPausedDuration / 60) {
-        cycle = lastCompletedSession.cycle + 1;
+        cycle = (lastCompletedSession.cycle % lastCompletedSession.totalCycles) + 1;
       }
     }
 
-    const session = new PomodoroSession({
+    const sessionData = {
       userId: req.user.id,
       cycle: cycle,
       startTime: now,
@@ -39,7 +39,16 @@ router.post('/start', authenticateJWT, async (req, res) => {
       endTime: null,
       intervalTime: null,
       completed: false,
-    });
+      // Usa i valori passati nella richiesta, se presenti, altrimenti usa i default
+      durationMinutes: req.body.durationMinutes || undefined,
+      breakMinutes: req.body.breakMinutes || undefined,
+      longBreakMinutes: req.body.longBreakMinutes || undefined,
+      maxPausedDuration: req.body.maxPausedDuration || undefined,
+      cyclesBeforeLongBreak: req.body.cyclesBeforeLongBreak || undefined,
+      totalCycles: req.body.totalCycles || undefined
+    };
+
+    const session = new PomodoroSession(sessionData);
 
     await session.save();
     res.status(201).json(session);
@@ -86,8 +95,12 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
             session.endTime = now;
             const totalTime = (now - session.startTime) / 1000;
             session.effectiveStudyTime = totalTime - session.totalPausedDuration;
-            session.cycle += 1;
-            session.completed = true;
+            session.cycle = (session.cycle % session.totalCycles) + 1;
+            if (session.cycle === 1) {
+              session.completed = true;
+            } else {
+              session.intervalTime = now;
+            }
             break;
           case 'interval':
             session.intervalTime = now;
@@ -107,9 +120,11 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
 });
 
 // Route per recuperare l'ultima sessione attiva dell'utente
-router.get('/last', authenticateJWT, async (req, res) => {
+router.get('/last/:date?', authenticateJWT, async (req, res) => {
   debugLog('Inizio ricerca ultima sessione per l\'utente:', req.user.id);
-  const date = req.query.date ? new Date(req.query.date) : new Date();
+  const date = req.params.date ? new Date(req.params.date) : new Date();
+
+  debugLog('Data specificata:', date);
 
   try {
     let lastSession = await PomodoroSession.findOne({
@@ -131,8 +146,12 @@ router.get('/last', authenticateJWT, async (req, res) => {
       : lastSession.totalPausedDuration;
     const elapsed = (now.getTime() - lastSession.startTime.getTime()) / 1000;
 
+    const currentDuration = lastSession.intervalTime 
+      ? (lastSession.cycle % lastSession.cyclesBeforeLongBreak === 0 ? lastSession.longBreakMinutes : lastSession.breakMinutes)
+      : lastSession.durationMinutes;
+
     if (totalPausedDuration >= lastSession.maxPausedDuration || 
-        elapsed - lastSession.totalPausedDuration >= lastSession.durationMinutes * 60) {
+        elapsed - lastSession.totalPausedDuration >= currentDuration * 60) {
       lastSession.completed = true;
       await lastSession.save();
       debugLog('Sessione completata automaticamente');
