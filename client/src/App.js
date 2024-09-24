@@ -1,3 +1,6 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'font-awesome/css/font-awesome.min.css';
+
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import axios from 'axios';
@@ -43,34 +46,25 @@ const App = () => {
     return isAuthenticated ? element : <Navigate to="/login" replace />;
   };
 
-  const ConditionalNavbar = () => {
-    const hideNavbarOnPaths = ['/login', '/register', '/home'];
-    const location = window.location.pathname;
-    if (hideNavbarOnPaths.includes(location)) {
-      return null;
-    }
-    return <Navbar />;
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <Router>
-      <ConditionalNavbar />
-      <Routes>
-        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
-        <Route path="/logout" element={<ProtectedRoute element={<Logout setIsAuthenticated={setIsAuthenticated} />} />} />
-        <Route path="/calendar" element={<ProtectedRoute element={<MyCalendar />} />} />
-        <Route path="/pomodoro" element={<ProtectedRoute element={<PomodoroTimer />} />} />
-        <Route path="/notes" element={<ProtectedRoute element={<NoteViewer />} />} />
-        <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
+      {/* Mostra la Navbar solo se non ci si trova nelle pagine di login o registrazione */}
+      {(isAuthenticated || window.location.pathname !== '/login' && window.location.pathname !== '/register') && <Navbar />}
+      <div className="page-content"> 
+        <Routes>
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
+          <Route path="/logout" element={<ProtectedRoute element={<Logout setIsAuthenticated={setIsAuthenticated} />} />} />
+          <Route path="/calendar" element={<ProtectedRoute element={<MyCalendar />} />} />
+          <Route path="/pomodoro" element={<ProtectedRoute element={<PomodoroTimer />} />} />
+          <Route path="/notes" element={<ProtectedRoute element={<NoteViewer />} />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </div>
     </Router>
   );
 };
 
 export default App;
+

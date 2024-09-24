@@ -6,7 +6,7 @@ const NoteSchema = new mongoose.Schema({
   lastEdit: { type: Date, required: true },
   content: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }], // Cambiato da String a Array di ObjectId
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' }, // Cambiato da String a Array di ObjectId
 });
 
 module.exports = mongoose.model('Note', NoteSchema);

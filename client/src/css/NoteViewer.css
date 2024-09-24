@@ -86,4 +86,76 @@
   .markdown-instructions li {
     margin-bottom: 5px;
   }
+  .note-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+  
+  .note-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 16px;
+    border-radius: 8px;
+    position: relative;
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 8px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .note-detail-modal {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    right: 10%;
+    bottom: 10%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    outline: none;
+    overflow-y: auto;
+  }
+  
+  .note-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .modal-body {
+    padding: 20px;
+    line-height: 1.6;
+    font-size: 1rem;
+  }
+  
+  .card-header h5 {
+    margin-bottom: 0;
+  }
+  
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
   

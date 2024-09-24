@@ -30,10 +30,11 @@ router.post('/', authenticateJWT, async (req, res) => {
       creationDate: new Date(),
       lastEdit: new Date(),
     });
+
     await newNote.save();
     res.status(201).json(newNote);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error'}); 
   }
 });
 

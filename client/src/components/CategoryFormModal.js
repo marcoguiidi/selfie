@@ -6,28 +6,29 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
   const [categoryName, setCategoryName] = useState('');
   const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await axios.get('/api/categories', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        if (Array.isArray(response.data)) {
-          setCategories(response.data);
-        } else {
-          console.error('La risposta non è un array:', response.data);
-          setCategories([]);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
+  // Funzione per ottenere le categorie
+  const fetchCategories = async () => {
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await axios.get('/api/categories', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (Array.isArray(response.data)) {
+        setCategories(response.data);
+      } else {
+        console.error('La risposta non è un array:', response.data);
         setCategories([]);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setCategories([]);
+    }
+  };
 
-    fetchCategories();
-  }, [isOpen, categories]);
+  useEffect(() => {
+    fetchCategories(); // Recupera le categorie ogni volta che il modal si apre
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,8 +38,8 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
       await axios.post('/api/categories', { name: categoryName }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      onSave();
-      onRequestClose();
+      setCategoryName(''); // Resetta il campo dopo l'aggiunta
+      fetchCategories(); // Ricarica le categorie
     } catch (error) {
       console.error('Error adding category:', error);
     }
@@ -50,18 +51,18 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
       await axios.delete(`/api/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      onSave(); // Richiama onSave per aggiornare le categorie
+      fetchCategories(); // Ricarica le categorie dopo l'eliminazione
     } catch (error) {
       console.error('Error deleting category:', error);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add Category">
-      <h2>Add Category</h2>
+    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Manage Categories">
+      <h2>Gestisci Categorie</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Category Name:</label>
+          <label>Nome Categoria:</label>
           <input
             type="text"
             value={categoryName}
@@ -69,9 +70,10 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
             required
           />
         </div>
-        <button type="submit">Add Category</button>
-        <button type="button" onClick={onRequestClose}>Cancel</button>
+        <button type="submit">Aggiungi Categoria</button>
+        <button type="button" onClick={onRequestClose}>Chiudi</button>
       </form>
+      
       <h3>Elenco Categorie:</h3>
       <ul>
         {categories.map(category => (

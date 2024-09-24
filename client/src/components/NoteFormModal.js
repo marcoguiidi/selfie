@@ -6,7 +6,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -31,15 +31,26 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
     fetchCategories();
   }, [isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newNote = {
-      title,
-      content,
-      category: selectedCategory,
-    };
-    onSave(newNote);
-    onRequestClose();
+    const token = localStorage.getItem('authToken');
+
+    try {
+      await axios.post('/api/notes', {
+        title: title,
+        content: content,
+        category: selectedCategory
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTitle('');
+      setContent('');
+      setSelectedCategory(null);
+      onSave();
+      onRequestClose();
+    } catch (error) {
+      console.error('Error creating new note: ', error);
+    }
   };
 
   return (
@@ -82,7 +93,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
             <option value="">Select a category</option>
             {Array.isArray(categories) && categories.length > 0 ? (
               categories.map((category) => (
-                <option key={category._id} value={category.name}>
+                <option key={category._id} value={category._id}>
                   {category.name}
                 </option>
               ))
