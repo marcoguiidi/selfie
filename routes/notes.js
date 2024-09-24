@@ -6,7 +6,7 @@ const authenticateJWT = require('../middleware/authenticateJWT');
 // Ottieni tutte le note dell'utente loggato
 router.get('/', authenticateJWT, async (req, res) => {
   try {
-    const notes = await Note.find({ createdBy: req.user.id });
+    const notes = await Note.find({ createdBy: req.user.id }).populate('category', 'name');
     res.json(notes);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching notes' });
@@ -35,6 +35,27 @@ router.post('/', authenticateJWT, async (req, res) => {
     res.status(201).json(newNote);
   } catch (error) {
     res.status(500).json({ message: 'Server error'}); 
+  }
+});
+
+router.put('/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { title, content, category } = req.body;
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+
+    note.lastEdit = new Date();
+    note.title = title;
+    note.content = content;
+    note.category = category;
+
+    await note.save();
+    res.json(note);
+  } catch (err) {
+    console.error('update note error: ', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

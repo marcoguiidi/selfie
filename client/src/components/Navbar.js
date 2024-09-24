@@ -20,7 +20,7 @@ const Navbar = () => {
             const isMobile = window.innerWidth <= 768; // Modifica il valore per adattarlo ai tuoi requisiti
 
             if (isMobile) {
-                pageContent.style.marginTop = `${isOpen ? '80px' : '10px'}`; // Imposta il margine per mobile
+                pageContent.style.marginTop = `${isOpen ? '150px' : '40px'}`; // Imposta il margine per mobile
             }
         }
     }, [isOpen]);

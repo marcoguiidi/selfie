@@ -16,7 +16,7 @@ const NoteViewer = () => {
   useEffect(() => {
     fetchNotes();
     fetchCategories();
-  }, []);
+  }, [isNoteModalOpen, isCategoryModalOpen, notes]);
 
   const fetchNotes = async () => {
     const token = localStorage.getItem('authToken');
@@ -38,14 +38,47 @@ const NoteViewer = () => {
     setNoteModalOpen(true);
   };
 
+  const handleEditNote = (note) => {
+    setSelectedNote(note);
+    setNoteModalOpen(true);
+};
+
   const handleAddCategory = () => {
     setCategoryModalOpen(true);
   };
 
-  const handleNoteSave = () => {
+  const handleCloseModal = () => {
     setNoteModalOpen(false);
-    fetchNotes();
+    setSelectedNote(null);
   };
+
+  const handleNoteSave = async (note) => {
+    try{
+      const token = localStorage.getItem('authToken');
+      const noteData = {
+        title: note.title,
+        content: note.content,
+        category: note.category,
+      };
+      if (selectedNote && selectedNote._id){
+        const response = await axios.put(`/api/notes/${selectedNote._id}`, noteData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setNotes((prevNotes) =>
+          prevNotes.map((e) => (e._id === selectedNote._id ? { ...response.data } : e))
+      );
+    } else {
+      console.log(noteData);
+      const response = await axios.post('/api/notes', noteData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotes((prevNotes) => [...prevNotes, { ...response.data }]);
+    }     
+    handleCloseModal();
+  } catch (err) {
+    console.error('error saving note', err.response ? err.response.data : err.message);
+  }
+};
 
   const handleCategorySave = () => {
     setCategoryModalOpen(false);
@@ -59,6 +92,7 @@ const NoteViewer = () => {
 
   const handleCloseDetailModal = () => {
     setShowDetailModal(false);
+    setSelectedNote(null);
   };
 
   const handleDeleteNote = async (noteId) => {
@@ -73,41 +107,56 @@ const NoteViewer = () => {
     }
   };
 
+  
   return (
     <div>
       <h2>Le tue Note</h2>
       <button onClick={handleAddNote}>Aggiungi Nota</button>
       <button onClick={handleAddCategory}>Gestisci Categorie</button>
       <div className="note-list">
-        {notes.map((note) => (
-          <Card key={note._id} className="mb-3">
-            <Card.Header>
-              <div className="d-flex justify-content-between align-items-center">
-                <h5>{note.title}</h5>
-                <Dropdown>
-                  <Dropdown.Toggle variant="secondary" id="dropdown-basic"></Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => handleShowDetailModal(note)}>
-                      Visualizza
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleDeleteNote(note._id)}>Elimina</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <p>{note.content.substring(0, 200)}...</p>
-            </Card.Body>
-          </Card>
-        ))}
+        {notes.map((note) => {
+          // Cerca la categoria della nota tra quelle disponibili
+          const noteCategoryId = note.category ? note.category._id : null; // Usa null se note.category è undefined
+          const noteCategory = categories.find(e => e._id === noteCategoryId);
+          const categoryName = noteCategory ? noteCategory.name : 'altro';
+
+          return (
+            <Card key={note._id} className="mb-3">
+              <Card.Header>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h5>{note.title}</h5>
+                  <small>{categoryName}</small>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="secondary" id="dropdown-basic"></Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={() => handleShowDetailModal(note)}>
+                        Visualizza
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => handleDeleteNote(note._id)}>
+                        Elimina
+                      </Dropdown.Item>
+                      <Dropdown.Item onClick={() => handleEditNote(note)}>
+                        Modifica
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+              </Card.Header>
+              <Card.Body>
+                <p>{note.content.substring(0, 200)}...</p>
+              </Card.Body>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Modale per aggiungere una nota */}
       <NoteFormModal
         isOpen={isNoteModalOpen}
-        onRequestClose={() => setNoteModalOpen(false)}
+        onRequestClose={handleCloseModal}
+        note={selectedNote}
         onSave={handleNoteSave}
-        categories={categories}
+        onCategory={handleAddCategory}
       />
 
       {/* Modale per gestire le categorie */}
@@ -120,7 +169,7 @@ const NoteViewer = () => {
       {/* Modale per visualizzare la nota completa */}
       {selectedNote && (
         <NoteDetailModal
-          show={showDetailModal} // usa "show" invece di "isOpen"
+          show={showDetailModal}
           onRequestClose={handleCloseDetailModal}
           note={selectedNote}
         />

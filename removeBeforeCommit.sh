@@ -1,12 +1,12 @@
 rm -rf node_modules/ && \
-echo "node_modules removed" && \
+echo "node_modules/ removed" && \
 
 cd client && \
 rm -rf build/ && \
-echo "build removed" && \
+echo "cleint/build/ removed" && \
 
 rm -rf node_modules/ && \
-echo "client/node_modules removed" && \
+echo "client/node_modules/ removed" && \
 
 
 cd .. && \

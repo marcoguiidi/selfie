@@ -2,11 +2,23 @@ import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
 
-const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
+const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title);
+      setContent(note.content);
+      setSelectedCategory(note.category ? note.category._id : null);
+    } else {
+      setTitle('');
+      setContent('');
+      setSelectedCategory(null);
+    }
+  },[note]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -29,32 +41,21 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
     };
 
     fetchCategories();
-  }, [isOpen]);
+  }, [isOpen, onCategory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('authToken');
-
-    try {
-      await axios.post('/api/notes', {
-        title: title,
-        content: content,
-        category: selectedCategory
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTitle('');
-      setContent('');
-      setSelectedCategory(null);
-      onSave();
-      onRequestClose();
-    } catch (error) {
-      console.error('Error creating new note: ', error);
-    }
-  };
+    const noteData ={
+      title,
+      content,
+      category: selectedCategory,
+    };
+    onSave(noteData);
+    onRequestClose();
+  }
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add Note">
+    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add/Edit Note">
       <h2>Add Note</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -104,6 +105,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave }) => {
         </div>
         <button type="submit">Save Note</button>
         <button type="button" onClick={onRequestClose}>Cancel</button>
+        <button type='button' onClick={onCategory}>edit categories</button>
       </form>
     </Modal>
   );

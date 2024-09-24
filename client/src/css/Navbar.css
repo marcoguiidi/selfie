@@ -47,6 +47,7 @@
 
 /* Nascondi le icone in mobile */
 @media (max-width: 768px) {
+
     .navbar-icons {
         display: none; /* Nascondi le icone su mobile */
     }
@@ -98,6 +99,10 @@
 
 /* Media Queries per dispositivi mobili */
 @media (max-width: 768px) {
+    .navbar {
+        height: 40px;
+    }
+
     .navbar-toggle {
         display: block; /* Mostra il pulsante sul mobile */
     }
