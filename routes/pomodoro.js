@@ -16,40 +16,45 @@ router.post('/start', authenticateJWT, async (req, res) => {
     const lastCompletedSession = await PomodoroSession.findOne({
       userId: req.user.id,
       completed: true,
-      endTime: { $ne: null }
+      endTime: { $ne: null },
+      $expr: {
+        $ne: [{ $subtract: ["$totalCycles", "$cycle"] }, 0]
+      }
     }).sort({ endTime: -1 });
 
     debugLog('Ultima sessione completata trovata:', lastCompletedSession);
     const now = new Date();
-    let cycle = 1;
+    
 
-    if (lastCompletedSession && lastCompletedSession.endTime) {
-      const timeSinceLastSessionEnd = (now - lastCompletedSession.endTime) / 1000 / 60;
-      if (timeSinceLastSessionEnd < lastCompletedSession.maxPausedDuration / 60) {
-        cycle = (lastCompletedSession.cycle % lastCompletedSession.totalCycles) + 1;
-      }
-    }
+    // if (lastCompletedSession && lastCompletedSession.endTime) {
+    //   const timeSinceLastSessionEnd = (now - lastCompletedSession.endTime) / 1000 / 60;
+    //   if (timeSinceLastSessionEnd < lastCompletedSession.maxPausedDuration) {
+    //     cycle = (lastCompletedSession.cycle % lastCompletedSession.totalCycles) + 1; 
+    //   }
+    // }
 
     const sessionData = {
       userId: req.user.id,
-      cycle: cycle,
       startTime: now,
       pausedTime: null,
-      totalPausedDuration: 0,
+      totalPausedDuration: 0,    
       endTime: null,
       intervalTime: null,
       completed: false,
+
       // Usa i valori passati nella richiesta, se presenti, altrimenti usa i default
+      
       durationMinutes: req.body.durationMinutes || undefined,
       breakMinutes: req.body.breakMinutes || undefined,
       longBreakMinutes: req.body.longBreakMinutes || undefined,
-      maxPausedDuration: req.body.maxPausedDuration || undefined,
       cyclesBeforeLongBreak: req.body.cyclesBeforeLongBreak || undefined,
       totalCycles: req.body.totalCycles || undefined
     };
 
     const session = new PomodoroSession(sessionData);
-
+    session.maxPausedDuration = session.cycle === session.cyclesBeforeLongBreak ? session.longBreakMinutes : session.breakMinutes;
+    session.cycle = lastCompletedSession ? ( lastCompletedSession.cycle % lastCompletedSession.totalCycles ) + 1 : 1;
+    
     await session.save();
     res.status(201).json(session);
   } catch (error) {
@@ -92,15 +97,10 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
             session.completed = true;
             break;
           case 'completed':
-            session.endTime = now;
-            const totalTime = (now - session.startTime) / 1000;
-            session.effectiveStudyTime = totalTime - session.totalPausedDuration;
-            session.cycle = (session.cycle % session.totalCycles) + 1;
-            if (session.cycle === 1) {
-              session.completed = true;
-            } else {
-              session.intervalTime = now;
-            }
+            // session.effectiveStudyTime = totalTime - session.totalPausedDuration;
+            // session.cycle = (session.cycle % session.totalCycles) + 1;
+            session.completed = true;
+            session.endTime = now;  
             break;
           case 'interval':
             session.intervalTime = now;
@@ -120,45 +120,73 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
 });
 
 // Route per recuperare l'ultima sessione attiva dell'utente
-router.get('/last/:date?', authenticateJWT, async (req, res) => {
+router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
   debugLog('Inizio ricerca ultima sessione per l\'utente:', req.user.id);
-  const date = req.params.date ? new Date(req.params.date) : new Date();
-
-  debugLog('Data specificata:', date);
+  const date = req.params.date ? new Date(req.params.date) : null;
+  const cheated = req.params.cheated ? true : false;
 
   try {
-    let lastSession = await PomodoroSession.findOne({
-      userId: req.user.id,
-      startTime: { $lte: date },
-      completed: false
-    }).sort({ startTime: -1 });
+    if (date) {
+      debugLog('Ricerca sessione attiva per data:', date);
+      const specificLastSession = await PomodoroSession.findOne({
+        userId: req.user.id,
+        completed: false,
+        startTime: date, 
+        $or: [
+          { endTime: null },
+          { endTime: { $gt: date } }
+        ]
+      });
 
-    if (!lastSession) {
-      debugLog('Nessuna sessione attiva trovata');
-      return res.status(404).json({ message: 'Nessuna sessione attiva trovata' });
+      debugLog('Sessione trovata:', specificLastSession);
+      
+      // if (!specificLastSession){
+      //   return res.status(404).json({ message: 'Nessuna sessione attiva per la data specificata' });
+      // }
+
+      // if (cheated){
+      //   specificLastSession.cheated = true;
+      //   //qui dobbiamo ritornare la sessione modificata
+      //   //controlliamo la data passara nei parametri e se ( (elapsed = (date - specificLastSession.startTime.getTime()) / 1000) ) - specificLastSession.totalPausedDuration >= specificLastSession.durationMinutes * 60
+      //   //allora agiamo come se fosse completata solo 
+        
+      // }
+
+      // res.json(specificLastSession);
     }
 
-    debugLog('Sessione trovata:', lastSession);
+    else {
+      let lastSession = await PomodoroSession.findOne({
+        userId: req.user.id,
+        completed: false
+      }).sort({ startTime: -1 });
 
-    const now = date;
-    const totalPausedDuration = lastSession.pausedTime 
-      ? (now.getTime() - new Date(lastSession.pausedTime).getTime()) / 1000 + lastSession.totalPausedDuration 
-      : lastSession.totalPausedDuration;
-    const elapsed = (now.getTime() - lastSession.startTime.getTime()) / 1000;
+      if (!lastSession) {
+        debugLog('Nessuna sessione attiva trovata');
+        return res.status(404).json({ message: 'Nessuna sessione attiva trovata' });
+      }
 
-    const currentDuration = lastSession.intervalTime 
-      ? (lastSession.cycle % lastSession.cyclesBeforeLongBreak === 0 ? lastSession.longBreakMinutes : lastSession.breakMinutes)
-      : lastSession.durationMinutes;
+      debugLog('Sessione trovata:', lastSession);
+      res.json(lastSession);
 
-    if (totalPausedDuration >= lastSession.maxPausedDuration || 
-        elapsed - lastSession.totalPausedDuration >= currentDuration * 60) {
-      lastSession.completed = true;
-      await lastSession.save();
-      debugLog('Sessione completata automaticamente');
-      return res.status(404).json({ message: 'Nessuna sessione attiva trovata' });
+      // const now = date;
+      // const totalPausedDuration = lastSession.pausedTime 
+      //   ? (now.getTime() - new Date(lastSession.pausedTime).getTime()) / 1000 + lastSession.totalPausedDuration 
+      //   : lastSession.totalPausedDuration;
+      // const elapsed = (now.getTime() - lastSession.startTime.getTime()) / 1000;
+
+      // const currentDuration = lastSession.intervalTime 
+      //   ? (lastSession.cycle % lastSession.cyclesBeforeLongBreak === 0 ? lastSession.longBreakMinutes : lastSession.breakMinutes)
+      //   : lastSession.durationMinutes;
+      // const elapsed = (now.getTime() - lastSession.startTime.getTime()) / 1000;
+
+      // if (totalPausedDuration >= lastSession.maxPausedDuration || 
+      //     elapsed - lastSession.totalPausedDuration >= currentDuration * 60) {
+      //   lastSession.completed = true;
+      //   await lastSession.save();
+      // debugLog('Sessione completata automaticamente');
+      // return res.status(404).json({ message: 'Nessuna sessione attiva trovata' });
     }
-
-    res.json(lastSession);
   } catch (error) {
     console.error('Errore durante il recupero dell\'ultima sessione:', error);
     res.status(500).json({ error: error.message });

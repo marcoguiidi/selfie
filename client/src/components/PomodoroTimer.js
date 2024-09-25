@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import '../css/PomodoroTimer.css';
 import TimeMachineModal from './TimeMachineModal';
+import PomodoroSetup from './PomodoroSetup';
 
 const AdvancedPomodoroTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -21,6 +22,9 @@ const AdvancedPomodoroTimer = () => {
   const [longBreakDuration, setLongBreakDuration] = useState(15);
   const [cyclesBeforeLongBreak, setCyclesBeforeLongBreak] = useState(4);
   const [totalCycles, setTotalCycles] = useState(5);
+
+  // State for showing setup
+  const [showSetup, setShowSetup] = useState(true);
 
   const getAuthConfig = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
@@ -46,7 +50,7 @@ const AdvancedPomodoroTimer = () => {
     } else if (data.intervalTime) {
       sessionState = 'INTERVAL';
       const intervalTime = new Date(data.intervalTime);
-      const intervalElapsed = (now.getTime() - intervalTime.getTime()) / 1000;
+      const intervalElapsed = (data.maxPauseDuration * 60) - ((now.getTime() - intervalTime.getTime()) / 1000 - data.totalPausedDuration * 60);
       const intervalMinutes = data.cycle % data.cyclesBeforeLongBreak === 0 ? data.longBreakMinutes : data.breakMinutes;
       newDuration = intervalMinutes * 60 - intervalElapsed;
     } else {
@@ -64,6 +68,7 @@ const AdvancedPomodoroTimer = () => {
     setLongBreakDuration(data.longBreakMinutes);
     setCyclesBeforeLongBreak(data.cyclesBeforeLongBreak);
     setTotalCycles(data.totalCycles);
+    setShowSetup(false);
     debugLog('Timer initialized:', { sessionState, newDuration, cycle: data.cycle });
   }, []);
 
@@ -95,6 +100,7 @@ const AdvancedPomodoroTimer = () => {
     setCurrentCycle(1);
     setIsRunning(false);
     updateTimerDisplay(studyDuration * 60);
+    setShowSetup(true);
     debugLog('Timer reset');
   };
 
@@ -114,6 +120,7 @@ const AdvancedPomodoroTimer = () => {
       setIsRunning(true);
       setCurrentCycle(response.data.cycle);
       updateTimerDisplay(response.data.durationMinutes * 60);
+      setShowSetup(false);
       debugLog('New session started:', response.data);
     } catch (error) {
       console.error('Error starting new session:', error);
@@ -225,52 +232,45 @@ const AdvancedPomodoroTimer = () => {
     resetTimer();
   };
 
+  const handleSetupComplete = (setupData) => {
+    setStudyDuration(setupData.studyDuration);
+    setBreakDuration(setupData.breakDuration);
+    setLongBreakDuration(setupData.longBreakDuration);
+    setCyclesBeforeLongBreak(setupData.cyclesBeforeLongBreak);
+    setTotalCycles(setupData.totalCycles);
+    setShowSetup(false);
+    setTimerStatus('READY');
+    updateTimerDisplay(setupData.studyDuration * 60);
+  };
+
   return (
     <div className="pomodoro-container">
       <h1>Advanced Pomodoro Timer</h1>
       {error && <div className="error-message">{error}</div>}
-      {!currentSession && timerStatus === 'READY' && (
-        <div className="timer-settings">
-          <label>
-            Study Duration (minutes):
-            <input type="number" value={studyDuration} onChange={(e) => setStudyDuration(parseInt(e.target.value))} />
-          </label>
-          <label>
-            Break Duration (minutes):
-            <input type="number" value={breakDuration} onChange={(e) => setBreakDuration(parseInt(e.target.value))} />
-          </label>
-          <label>
-            Long Break Duration (minutes):
-            <input type="number" value={longBreakDuration} onChange={(e) => setLongBreakDuration(parseInt(e.target.value))} />
-          </label>
-          <label>
-            Cycles before Long Break:
-            <input type="number" value={cyclesBeforeLongBreak} onChange={(e) => setCyclesBeforeLongBreak(parseInt(e.target.value))} />
-          </label>
-          <label>
-            Total Cycles:
-            <input type="number" value={totalCycles} onChange={(e) => setTotalCycles(parseInt(e.target.value))} />
-          </label>
-        </div>
+      {showSetup ? (
+        <PomodoroSetup onSetupComplete={handleSetupComplete} />
+      ) : (
+        <>
+          <div className="timer-display">{timerDisplay}</div>
+          <div className="timer-status">{timerStatus}</div>
+          <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>
+          <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
+            {timerStatus === 'PAUSED' ? 'Resume' : 'Start'}
+          </button>
+          <button onClick={pauseSession} disabled={!isRunning}>Pause</button>
+          <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
+          <button onClick={() => setIsTimeMachineOpen(true)}>Time Machine</button>
+          {isTimeMachineActive && (
+            <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
+          )}
+          <TimeMachineModal
+            isOpen={isTimeMachineOpen}
+            onRequestClose={() => setIsTimeMachineOpen(false)}
+            onSetDate={handleSetDate}
+            onResetDate={handleResetDate}
+          />
+        </>
       )}
-      <div className="timer-display">{timerDisplay}</div>
-      <div className="timer-status">{timerStatus}</div>
-      <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>
-      <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
-        {timerStatus === 'PAUSED' ? 'Resume' : 'Start'}
-      </button>
-      <button onClick={pauseSession} disabled={!isRunning}>Pause</button>
-      <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
-      <button onClick={() => setIsTimeMachineOpen(true)}>Time Machine</button>
-      {isTimeMachineActive && (
-        <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
-      )}
-      <TimeMachineModal
-        isOpen={isTimeMachineOpen}
-        onRequestClose={() => setIsTimeMachineOpen(false)}
-        onSetDate={handleSetDate}
-        onResetDate={handleResetDate}
-      />
     </div>
   );
 };

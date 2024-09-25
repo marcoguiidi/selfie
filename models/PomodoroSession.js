@@ -10,12 +10,13 @@ const pomodoroSessionSchema = new mongoose.Schema({
   pausedTime: { type: Date },
   intervalTime: { type: Date },
   totalPausedDuration: { type: Number, default: 0 },
-  maxPausedDuration: { type: Number, default: 1800 }, // 30 minuti in secondi
+  maxPausedDuration: { type: Number, default: 5 },
   endTime: { type: Date },
   completed: { type: Boolean, default: false },
   effectiveStudyTime: { type: Number },
   cyclesBeforeLongBreak: { type: Number, default: 4 },
-  totalCycles: { type: Number, default: 4 }
+  totalCycles: { type: Number, default: 4 },
+  cheated: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('PomodoroSession', pomodoroSessionSchema);
