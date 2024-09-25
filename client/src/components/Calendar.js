@@ -96,15 +96,17 @@ const MyCalendar = () => {
             const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            setEvents((prevEvents) =>
-              prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
-            );
+            // setEvents((prevEvents) =>
+            //   prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
+            // );
           } else {
             const response = await axios.post('/api/events', eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            setEvents([...events, { ...response.data }]);
+            // setEvents([...events, { ...response.data }]);
           }
+          
+          fetchEvents();
           handleCloseModal();
         } catch (err) {
           console.error('Error saving event:', err.response ? err.response.data : err.message);

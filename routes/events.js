@@ -43,27 +43,36 @@ router.post('/', authenticateJWT, async (req, res) => {
         status: 'active'
       });
       const savedEvent = await newEvent.save();
-      res.status(201).json(newEvent);
+      res.status(201).json(savedEvent);
     } catch (err) {
       res.status(500).json({ message: 'Server error' });
     }
   });
 
 // Modifica un evento esistente
-router.put('/:id/status', authenticateJWT, async (req, res) => {
+router.put('/:id', authenticateJWT, async (req, res) => {
     try {
+      const { title, start, end, isDeadline, description, invited, color } = req.body;
       const event = await Event.findById(req.params.id);
       if (!event) {
         return res.status(404).json({ message: 'Event not found' });
       }
-      
+
+      event.title = title;
+      event.start = start;
+      event.end = end;
+      event.isDeadline = isDeadline;
+      event.description = description;
+      event.invited = invited;
+      event.color = color;
+
       const now = new Date();
       if (event.isDeadline && event.end < now) {
         event.status = 'expired';
       } else {
         event.status = 'active';
       }
-      
+
       await event.save();
       res.json(event);
     } catch (err) {

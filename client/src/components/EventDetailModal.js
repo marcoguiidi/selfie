@@ -24,7 +24,7 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, cur
             >
                 <h2>Event Details</h2>
                 <p><strong>Title:</strong> {event.title}</p>
-                { event.deadline ? (
+                { event.isDeadline ? (
                     <div>
                         <p><strong>Deadline:</strong> {new Date(event.end).toLocaleString()}</p>
                     </div>
