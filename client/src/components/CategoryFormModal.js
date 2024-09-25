@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
+import '../css/CategoryFormModal.css'
 
 const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
   const [categoryName, setCategoryName] = useState('');
@@ -47,6 +48,7 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
 
   const handleDelete = async (categoryId) => {
     const token = localStorage.getItem('authToken');
+    
     try {
       await axios.delete(`/api/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -62,7 +64,7 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
       <h2>Gestisci Categorie</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Nome Categoria:</label>
+          <label>Category name:</label>
           <input
             type="text"
             value={categoryName}
@@ -70,16 +72,16 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
             required
           />
         </div>
-        <button type="submit">Aggiungi Categoria</button>
-        <button type="button" onClick={onRequestClose}>Chiudi</button>
+        <button type="submit">Add</button>
+        <button type="button" onClick={onRequestClose}>Close</button>
       </form>
       
-      <h3>Elenco Categorie:</h3>
+      <h3>Yuor categories:</h3>
       <ul>
         {categories.map(category => (
           <li key={category._id}>
             {category.name}
-            <button onClick={() => handleDelete(category._id)}>Elimina</button>
+            <button className="delete-category-btn" onClick={() => handleDelete(category._id)}>X</button>
           </li>
         ))}
       </ul>

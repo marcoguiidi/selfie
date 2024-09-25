@@ -48,8 +48,7 @@ const App = () => {
 
   return (
     <Router>
-      {/* Mostra la Navbar solo se non ci si trova nelle pagine di login o registrazione */}
-      {(isAuthenticated || window.location.pathname !== '/login' && window.location.pathname !== '/register') && <Navbar />}
+      <ProtectedRoute element={<Navbar />} /> 
       <div className="page-content"> 
         <Routes>
           <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />

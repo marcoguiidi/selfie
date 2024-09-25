@@ -1,32 +1,27 @@
-.add-note-btn {
+.delete-category-btn {
     background-color: transparent;
     border: none;
-    color: gray; /* Il + sarà nero */
-    font-size: 36px; /* Dimensione del + */
+    color: gray; /* Colore nero per la X */
+    font-size: 18px; /* Dimensione della X */
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+    width: 30px;
+    height: 30px;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
     box-shadow: none;
     outline: none;
   }
   
-  .add-note-btn:hover {
+  .delete-category-btn:hover {
     background-color: transparent;
   }
   
-  .add-note-btn:after {
+  .delete-category-btn:after {
     content: '';
-    position: absolute;
     top: 50%;
     left: 50%;
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.1); /* Cerchio grigio chiaro */
     opacity: 0;
@@ -34,7 +29,7 @@
     transform: translate(-50%, -50%);
   }
   
-  .add-note-btn:hover:after {
+  .delete-category-btn:hover:after {
     opacity: 1;
   }
   

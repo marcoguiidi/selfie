@@ -42,7 +42,7 @@ const Navbar = () => {
                     <span className="icon">&#8962;</span> 
                 </Link>
                 <Link to="/logout" className="nav-icon">
-                    <span className="icon">&#xf08b;</span>
+                    <span className="icon">&#9211;</span>
                 </Link>
             </div>
             <div ref={navbarMenuRef} className={`navbar-menu ${isOpen ? 'open' : ''}`}>
