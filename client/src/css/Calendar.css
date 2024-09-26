@@ -1,0 +1,49 @@
+
+  
+  
+
+.rbc-month-view {
+    border-spacing: 0; /* Rimuove la spaziatura tra le celle */
+}
+
+.rbc-month-row {
+    border-bottom: none !important;
+}
+
+.rbc-day-bg {
+    border: none !important;
+}
+
+.rbc-toolbar button {
+    background-color: #007bff; /* Colore di sfondo */
+    color: white; /* Colore del testo */
+    border: none; /* Rimuovi i bordi */
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 4px; /* Arrotonda i bordi */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+.rbc-toolbar button:hover {
+    background-color: #0056b3; /* Colore durante hover */
+}
+  
+.rbc-btn-group > button {
+    margin-right: 10px; /* Spaziatura tra i pulsanti di vista */
+}
+  
+.rbc-toolbar-label {
+    font-weight: bold; /* Evidenzia il titolo corrente */
+    font-size: 18px;
+}
+  
+.rbc-toolbar button:focus {
+    outline: none; /* Rimuove il bordo focus */
+}
+  
+.rbc-active-view {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+  

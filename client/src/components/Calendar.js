@@ -5,7 +5,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import axios from 'axios';
 import EventFormModal from './EventFormModal';
 import EventDetailModal from './EventDetailModal';
-import TimeMachineModal from './TimeMachineModal';  // Importa la modale TimeMachine
+import TimeMachineModal from './TimeMachineModal';  
+import '../css/Calendar.css';
 
 const localizer = momentLocalizer(moment);
 
@@ -141,8 +142,6 @@ const MyCalendar = () => {
 
         return { style };
     };
-    
-    
 
     const handleSelectEvent = (event) => {
         setSelectedEvent(event);
