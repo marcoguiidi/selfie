@@ -82,6 +82,7 @@ const MyCalendar = () => {
 
     const handleSaveEvent = async (event) => {
         try {
+          console.log('evento passato dal form', event);
           const token = localStorage.getItem('authToken');
           const eventData = {
             title: event.title,
@@ -90,7 +91,9 @@ const MyCalendar = () => {
             isDeadline: event.isDeadline,
             description: event.description,
             invited: event.invited,
-            color: event.color
+            color: event.color,
+            repetition: event.repetition,
+            endRepetition: event.endRepetition
           };
     
           if (selectedEvent && selectedEvent._id) {
@@ -100,11 +103,13 @@ const MyCalendar = () => {
             // setEvents((prevEvents) =>
             //   prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
             // );
+            console.log('edited event saved', response.data);
           } else {
             const response = await axios.post('/api/events', eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
             // setEvents([...events, { ...response.data }]);
+            console.log('new event saved', response.data);
           }
           
           fetchEvents();
@@ -150,6 +155,7 @@ const MyCalendar = () => {
 
     const handleEditEvent = (event) => {
         setSelectedEvent(event);
+        console.log('edit', event);
         setModalOpen(true);
         setDetailModalOpen(false);
     };
@@ -164,7 +170,8 @@ const MyCalendar = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setEvents(events.filter(e => e._id !== eventId));
+                // setEvents(events.filter(e => e._id !== eventId));
+                fetchEvents();
                 setDetailModalOpen(false);
             } catch (err) {
                 console.error('Error deleting event:', err);
