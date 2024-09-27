@@ -15,15 +15,14 @@ const AdvancedPomodoroTimer = () => {
   const [isTimeMachineActive, setIsTimeMachineActive] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentCycle, setCurrentCycle] = useState(1);
+  const [timeMachineStartTime, setTimeMachineStartTime] = useState(null);
   
-  // State variables for parametric settings
   const [studyDuration, setStudyDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
   const [longBreakDuration, setLongBreakDuration] = useState(15);
   const [cyclesBeforeLongBreak, setCyclesBeforeLongBreak] = useState(4);
   const [totalCycles, setTotalCycles] = useState(5);
 
-  // State for showing setup
   const [showSetup, setShowSetup] = useState(true);
 
   const getAuthConfig = () => ({
@@ -31,35 +30,44 @@ const AdvancedPomodoroTimer = () => {
   });
 
   const debugLog = (...messages) => {
-    console.log(...messages);
+    console.log(new Date().toISOString(), ...messages);
   };
 
-  const initializeTimer = useCallback((data) => {
-    debugLog('Initializing timer with data:', data);
-    const now = new Date();
+  const initializeTimer = useCallback((data, timeMachineDate = null) => {
+    debugLog('Initializing timer with data:', JSON.stringify(data, null, 2));
+    const now = timeMachineDate || new Date();
     const startTime = new Date(data.startTime);
-    const elapsed = (now.getTime() - startTime.getTime()) / 1000;
-
+    const elapsed = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
+  
     let sessionState;
     let newDuration;
-
+  
+    const totalSessionDuration = data.durationMinutes * 60;
+  
     if (data.pausedTime) {
       sessionState = 'PAUSED';
-      const pausedDuration = (now.getTime() - new Date(data.pausedTime).getTime()) / 1000;
-      newDuration = data.durationMinutes * 60 - (elapsed - pausedDuration - data.totalPausedDuration);
+      const pausedDuration = Math.max(0, (now.getTime() - new Date(data.pausedTime).getTime()) / 1000);
+      newDuration = Math.max(0, totalSessionDuration - (elapsed - pausedDuration - data.totalPausedDuration));
     } else if (data.intervalTime) {
       sessionState = 'INTERVAL';
       const intervalTime = new Date(data.intervalTime);
-      const intervalElapsed = (data.maxPauseDuration * 60) - ((now.getTime() - intervalTime.getTime()) / 1000 - data.totalPausedDuration * 60);
+      const intervalElapsed = Math.max(0, (now.getTime() - intervalTime.getTime()) / 1000);
       const intervalMinutes = data.cycle % data.cyclesBeforeLongBreak === 0 ? data.longBreakMinutes : data.breakMinutes;
-      newDuration = intervalMinutes * 60 - intervalElapsed;
+      newDuration = Math.max(0, (intervalMinutes * 60) - intervalElapsed);
     } else {
       sessionState = 'ACTIVE';
-      newDuration = data.durationMinutes * 60 - (elapsed - data.totalPausedDuration);
+      newDuration = Math.max(0, totalSessionDuration - (elapsed - data.totalPausedDuration));
     }
-
-    setDuration(Math.max(0, Math.round(newDuration)));
-    updateTimerDisplay(Math.max(0, Math.round(newDuration)));
+  
+    if (newDuration === 0 && !data.completed) {
+      newDuration = totalSessionDuration;
+      sessionState = 'ACTIVE';
+      debugLog('Session not completed but duration is 0. Setting to full duration.');
+    }
+  
+    debugLog('Timer calculation:', { elapsed, totalPausedDuration: data.totalPausedDuration, newDuration, sessionState });
+    setDuration(Math.round(newDuration));
+    updateTimerDisplay(Math.round(newDuration));
     setTimerStatus(sessionState);
     setIsRunning(sessionState === 'ACTIVE' || sessionState === 'INTERVAL');
     setCurrentCycle(data.cycle);
@@ -71,29 +79,37 @@ const AdvancedPomodoroTimer = () => {
     setShowSetup(false);
     debugLog('Timer initialized:', { sessionState, newDuration, cycle: data.cycle });
   }, []);
-
-  const fetchSessionData = useCallback(async () => {
+  
+  const fetchSessionData = useCallback(async (date = null, cheated = false) => {
+    debugLog('fetchSessionData called with:', { date, cheated });
     setTimerStatus('LOADING');
     try {
       let url = '/api/pomodoro/last';
-      if (isTimeMachineActive) {
-        url += `/${encodeURIComponent(currentDate.toISOString())}`;
+      if (date) {
+        url += `/${encodeURIComponent(date.toISOString())}`;
+        if (cheated) {
+          url += '/true';
+        }
       }
+      debugLog('Fetching from URL:', url);
       const response = await axios.get(url, getAuthConfig());
-      debugLog('Session data received:', response.data);
+      debugLog('Session data received:', JSON.stringify(response.data, null, 2));
       if (response.data && !response.data.completed) {
         setCurrentSession(response.data);
-        initializeTimer(response.data);
+        initializeTimer(response.data, date);
       } else {
+        debugLog('No active session found or session completed, resetting timer');
         resetTimer();
       }
     } catch (error) {
       console.error('Error fetching session:', error);
+      debugLog('Error details:', error.response?.data || error.message);
       resetTimer();
     }
-  }, [currentDate, isTimeMachineActive, initializeTimer]);
+  }, [initializeTimer]);
 
   const resetTimer = () => {
+    debugLog('Resetting timer');
     setCurrentSession(null);
     setDuration(studyDuration * 60);
     setTimerStatus('READY');
@@ -101,7 +117,7 @@ const AdvancedPomodoroTimer = () => {
     setIsRunning(false);
     updateTimerDisplay(studyDuration * 60);
     setShowSetup(true);
-    debugLog('Timer reset');
+    debugLog('Timer reset complete');
   };
 
   const startNewSession = async () => {
@@ -112,8 +128,10 @@ const AdvancedPomodoroTimer = () => {
         breakMinutes: breakDuration,
         longBreakMinutes: longBreakDuration,
         cyclesBeforeLongBreak: cyclesBeforeLongBreak,
-        totalCycles: totalCycles
+        totalCycles: totalCycles,
+        timeMachineDate: isTimeMachineActive ? currentDate.toISOString() : undefined
       }, getAuthConfig());
+      debugLog('New session started:', JSON.stringify(response.data, null, 2));
       setCurrentSession(response.data);
       setDuration(response.data.durationMinutes * 60);
       setTimerStatus('ACTIVE');
@@ -121,60 +139,43 @@ const AdvancedPomodoroTimer = () => {
       setCurrentCycle(response.data.cycle);
       updateTimerDisplay(response.data.durationMinutes * 60);
       setShowSetup(false);
-      debugLog('New session started:', response.data);
     } catch (error) {
       console.error('Error starting new session:', error);
+      debugLog('Error details:', error.response?.data || error.message);
       setError('Failed to start new session.');
     }
   };
 
-  const pauseSession = async () => {
-    if (!currentSession) return;
-    debugLog('Pausing session...');
+  const performSessionAction = async (action, state = null) => {
+    if (!currentSession) {
+      debugLog(`Attempt to ${action} with no current session`);
+      return;
+    }
+    debugLog(`Performing session action: ${action}, state: ${state}`);
     try {
-      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/pause`, { action: 'pause' }, getAuthConfig());
+      const timeMachineDate = isTimeMachineActive
+        ? new Date(currentDate.getTime() + (Date.now() - timeMachineStartTime))
+        : undefined;
+      
+      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/${action}`, {
+        action,
+        state,
+        timeMachineDate: timeMachineDate ? timeMachineDate.toISOString() : undefined
+      }, getAuthConfig());
+      debugLog(`Session ${action} response:`, JSON.stringify(response.data, null, 2));
       setCurrentSession(response.data);
-      setTimerStatus('PAUSED');
-      setIsRunning(false);
-      debugLog('Session paused:', response.data);
+      setTimerStatus(action === 'pause' ? 'PAUSED' : 'ACTIVE');
+      setIsRunning(action !== 'pause');
     } catch (error) {
-      console.error('Error pausing session:', error);
-      setError('Failed to pause session.');
+      console.error(`Error ${action} session:`, error);
+      debugLog('Error details:', error.response?.data || error.message);
+      setError(`Failed to ${action} session.`);
     }
   };
 
-  const resumeSession = async () => {
-    if (!currentSession) return;
-    debugLog('Resuming session...');
-    try {
-      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/resume`, { action: 'resume' }, getAuthConfig());
-      setCurrentSession(response.data);
-      setTimerStatus('ACTIVE');
-      setIsRunning(true);
-      debugLog('Session resumed:', response.data);
-    } catch (error) {
-      console.error('Error resuming session:', error);
-      setError('Failed to resume session.');
-    }
-  };
-
-  const completeSession = async (state) => {
-    if (!currentSession) return;
-    debugLog(`Completing session: ${state}`);
-    try {
-      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/stop`, { action: 'stop', state }, getAuthConfig());
-      if (state === 'interval') {
-        setCurrentSession(response.data);
-        initializeTimer(response.data);
-      } else {
-        resetTimer();
-      }
-      debugLog(`Session completed with state: ${state}`, response.data);
-    } catch (error) {
-      console.error('Error completing session:', error);
-      setError('Failed to complete session.');
-    }
-  };
+  const pauseSession = () => performSessionAction('pause');
+  const resumeSession = () => performSessionAction('resume');
+  const completeSession = (state) => performSessionAction('stop', state);
 
   const updateTimerDisplay = (time) => {
     const minutes = Math.floor(time / 60);
@@ -183,10 +184,12 @@ const AdvancedPomodoroTimer = () => {
   };
 
   useEffect(() => {
+    debugLog('Initial useEffect running, fetching session data');
     fetchSessionData();
   }, [fetchSessionData]);
 
   useEffect(() => {
+    debugLog('Timer effect running. isRunning:', isRunning, 'duration:', duration);
     let timer;
     if (isRunning && duration > 0) {
       timer = setInterval(() => {
@@ -194,6 +197,7 @@ const AdvancedPomodoroTimer = () => {
           const newDuration = prevDuration - 1;
           updateTimerDisplay(newDuration);
           if (newDuration <= 0) {
+            debugLog('Timer reached 0, clearing interval and completing session');
             clearInterval(timer);
             completeSession(currentSession.intervalTime ? 'completed' : 'interval');
             return 0;
@@ -202,10 +206,16 @@ const AdvancedPomodoroTimer = () => {
         });
       }, 1000);
     }
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) {
+        debugLog('Cleaning up timer interval');
+        clearInterval(timer);
+      }
+    };
   }, [isRunning, duration, currentSession]);
 
   const handleStartResume = () => {
+    debugLog('handleStartResume called. Current status:', timerStatus);
     if (timerStatus === 'READY') {
       startNewSession();
     } else if (timerStatus === 'PAUSED') {
@@ -214,25 +224,31 @@ const AdvancedPomodoroTimer = () => {
   };
 
   const handleSetDate = (newDate) => {
+    debugLog('handleSetDate called with:', newDate);
     setCurrentDate(newDate);
     setIsTimeMachineOpen(false);
     setIsTimeMachineActive(true);
-    fetchSessionData();
+    setTimeMachineStartTime(Date.now());
+    fetchSessionData(newDate, true);
   };
 
   const handleResetDate = () => {
-    setCurrentDate(new Date());
+    debugLog('handleResetDate called');
+    const now = new Date();
+    setCurrentDate(now);
     setIsTimeMachineOpen(false);
     setIsTimeMachineActive(false);
-    fetchSessionData();
+    setTimeMachineStartTime(null);
+    fetchSessionData(now, false);
   };
 
   const handleAbort = async () => {
+    debugLog('handleAbort called');
     await completeSession('aborted');
-    resetTimer();
   };
 
   const handleSetupComplete = (setupData) => {
+    debugLog('Setup completed with data:', setupData);
     setStudyDuration(setupData.studyDuration);
     setBreakDuration(setupData.breakDuration);
     setLongBreakDuration(setupData.longBreakDuration);

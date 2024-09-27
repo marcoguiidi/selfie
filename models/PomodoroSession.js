@@ -16,7 +16,8 @@ const pomodoroSessionSchema = new mongoose.Schema({
   effectiveStudyTime: { type: Number },
   cyclesBeforeLongBreak: { type: Number, default: 4 },
   totalCycles: { type: Number, default: 4 },
-  cheated: { type: Boolean, default: false }
+  cheated: { type: Boolean, default: false },
+  checked: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('PomodoroSession', pomodoroSessionSchema);
