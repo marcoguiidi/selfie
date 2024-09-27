@@ -13,6 +13,8 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
   const [description, setDescription] = useState('');
   const [invited, setInvited] = useState('');
   const [color, setColor] = useState('#007bff');
+  const [repetition, setRepetition] = useState('no-repetition');
+  const [endRepetition, setEndRepetition] = useState('');
 
   useEffect(() => {
     if (event) {
@@ -23,9 +25,11 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
       setDescription(event.description);
       setInvited(event.invited.join(', '));
       setColor(event.color);
+      setRepetition(event.repetition);
+      setEndRepetition(moment(event.endRepetition).format('YYYY-MM-DD'));
     } else {
       const startTime = initialStart ? moment(initialStart) : moment();
-      setStart(startTime.format('YYYY-MM-DDTHH:mm'));
+      setStart(startTime.format('YYYY-MM-DDTHH:mm'));  
 
       // Calculate end time considering AM/PM transitions
       let endTime = startTime.clone().add(1, 'hour');
@@ -43,6 +47,8 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
       setDescription('');
       setInvited('');
       setColor('#007bff');
+      setRepetition('no-repetition');
+      setEndRepetition('');
     }
   }, [event, initialStart]);
 
@@ -55,7 +61,9 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
       isDeadline,
       description,
       invited: invited.split(',').map(email => email.trim()),
-      color
+      color, 
+      repetition,
+      endRepetition: repetition === 'no-repetition'? null : new Date(endRepetition)
     };
     onSave(eventData);
     onRequestClose();
@@ -92,6 +100,22 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
           </div>
         )}
         <div>
+        <div>
+          <label>Repetition:</label>
+          <select value={repetition} onChange={(e) => setRepetition(e.target.value)}>
+            <option value="no-repetition">No Repetition</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+          {repetition !== 'no-repetition' && (
+            <div>
+              <label>End Repetition:</label>
+              <input type="date" value={endRepetition} onChange={(e) => setEndRepetition(e.target.value)} />
+            </div>
+          )}
+        </div>
           <label>Description:</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>

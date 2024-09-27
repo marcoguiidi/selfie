@@ -9,7 +9,10 @@ const EventSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   invited: [String],
   color: { type: String, default: '#007bff' },
-  status: { type: String, enum: ['active', 'expired'], default: 'active' }
+  status: { type: String, enum: ['active', 'expired'], default: 'active' },
+  repetition: { type: String, default: 'no-repetition' },
+  endRepetition: Date,
+  parentEvent: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' }
 });
 
 module.exports = mongoose.model('Event', EventSchema);
