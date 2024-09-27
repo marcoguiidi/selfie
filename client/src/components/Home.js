@@ -15,11 +15,16 @@ const Home = () => {
                 const response = await axios.get('/api/events', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
-                // Filtra solo gli eventi futuri e limita a 5 eventi
+    
+                // Filtra solo gli eventi futuri
                 const now = new Date();
                 const futureEvents = response.data.filter(event => new Date(event.start) > now);
-                setEvents(futureEvents.slice(0, 5));
+    
+                // Ordina gli eventi per data di start in ordine crescente
+                const sortedEvents = futureEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+    
+                // Limita a 5 eventi
+                setEvents(sortedEvents.slice(0, 5));
             } catch (error) {
                 console.error('Errore nel recupero degli eventi:', error);
             }
