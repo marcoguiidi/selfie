@@ -82,7 +82,6 @@ const MyCalendar = () => {
 
     const handleSaveEvent = async (event) => {
         try {
-          console.log('evento passato dal form', event);
           const token = localStorage.getItem('authToken');
           const eventData = {
             title: event.title,
@@ -103,13 +102,13 @@ const MyCalendar = () => {
             // setEvents((prevEvents) =>
             //   prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
             // );
-            console.log('edited event saved', response.data);
+
           } else {
             const response = await axios.post('/api/events', eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
             // setEvents([...events, { ...response.data }]);
-            console.log('new event saved', response.data);
+
           }
           
           fetchEvents();

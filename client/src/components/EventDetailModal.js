@@ -1,16 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
+import moment from 'moment';
+import axios from 'axios';
 import "../css/EventDetailModal.css";
 
 Modal.setAppElement('#root'); // Necessario per accessibilità
 
 const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, currentUser, onDecline }) => {
-    // Verifica se l'evento è definito
+    const [parentEventDetails, setParentEventDetails] = useState(null);
+
+    useEffect(() => {
+        // Recupera i dettagli dell'evento padre se esiste
+        if (!event) return;
+        const fetchParentEvent = async () => {
+            if (event.parentEvent) {
+                const token = localStorage.getItem('authToken');
+                try {
+                    const response = await axios.get(`/api/events/${event.parentEvent}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        }
+                    });
+                    const data = response.data;
+                    setParentEventDetails(data);
+                } catch (error) {
+                    console.error('Errore nel recupero dell\'evento padre:', error);
+                }
+            }
+        };
+
+        fetchParentEvent();
+    }, [event]);
+
+
     if (!event) {
-        return null; // Non mostrare nulla se non c'è un evento
+        return null; 
     }
 
-    // Verifica se l'utente corrente è il creatore dell'evento
     const isCreator = event.createdBy.email === currentUser;
 
     return (
@@ -37,6 +63,9 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, cur
                 {event.description.trim() && <p><strong>Description:</strong> {event.description}</p>}
                 {event.invited.length > 0 && event.invited[0] !== "" && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
                 <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
+                { event.parentEvent && parentEventDetails && (
+                    <small>Repeated from {moment(parentEventDetails.start).format('YYYY-MM-DD')}</small>
+                )}
                 <div className="modal-buttons">
                     {isCreator ? (
                         <>

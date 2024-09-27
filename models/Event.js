@@ -12,7 +12,7 @@ const EventSchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'expired'], default: 'active' },
   repetition: { type: String, default: 'no-repetition' },
   endRepetition: Date,
-  parentEvent: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' }
+  parentEvent: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', default: null }
 });
 
 module.exports = mongoose.model('Event', EventSchema);

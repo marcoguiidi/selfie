@@ -25,6 +25,23 @@ router.get('/', authenticateJWT, async (req, res) => {
     }
 });
 
+// Ottieni un singolo evento per ID
+router.get('/:id', authenticateJWT, async (req, res) => {
+  try {
+      const event = await Event.findById(req.params.id)
+          .populate('createdBy', 'email'); // Popola i dettagli del creatore se necessario
+      
+      if (!event) {
+          return res.status(404).json({ message: 'Event not found' });
+      }
+
+      res.json(event);
+  } catch (err) {
+      console.error('Server Error:', err);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Crea un nuovo evento
 router.post('/', authenticateJWT, async (req, res) => {
     const { title, start, end, isDeadline, description, invited, color, repetition, endRepetition } = req.body;
@@ -150,18 +167,16 @@ const handleRepetedEvents = async (event) => {
   const { repetition, endRepetition, start, end } = event;
   const repetitions = [];
 
-  console.log('qui ci arriva?', event);
+
   
   // Definisci la data finale
   const endDate = new Date(endRepetition);
   let nextStart = new Date(start);
   let nextEnd = new Date(end);
+  const originalDay = nextStart.getDate();
 
   // Gestisci le ripetizioni
   while (nextStart < endDate) {
-
-      console.log('nextStart:', nextStart);
-      console.log('endDate:', endDate);
       // Incrementa la data in base alla ripetizione
       switch (repetition) {
           case 'daily':
@@ -173,12 +188,20 @@ const handleRepetedEvents = async (event) => {
               nextEnd.setDate(nextEnd.getDate() + 7);
               break;
           case 'monthly':
-              const month = nextStart.getMonth();
-              nextStart.setMonth(month + 1);
-              nextEnd.setMonth(month + 1);
-              if (nextStart.getDate() < start.getDate()) {
-                  nextStart.setDate(0); // Imposta all'ultimo giorno del mese
-                  nextEnd.setDate(0); // Imposta all'ultimo giorno del mese
+              const currentMonth = nextStart.getMonth();
+              const daysInMonth = getDaysInMonth(currentMonth + 1, nextStart.getFullYear());
+        
+              if(daysInMonth < originalDay){
+                // Se il mese successivo non ha abbastanza giorni, imposta l'ultimo giorno del mese
+                  nextStart.setDate(daysInMonth);
+                  nextEnd.setDate(daysInMonth);
+                  nextStart.setMonth(currentMonth + 1);
+                  nextEnd.setMonth(currentMonth + 1);
+              } else {
+                nextStart.setMonth(currentMonth + 1);
+                nextEnd.setMonth(currentMonth + 1);
+                nextStart.setDate(originalDay);
+                nextEnd.setDate(originalDay);
               }
               break;
           case 'yearly':
@@ -189,23 +212,25 @@ const handleRepetedEvents = async (event) => {
               break;
       }
 
-      // Crea un nuovo evento per ogni ripetizione
-      const newEvent = new Event({
-        title: event.title,
-        start: new Date(nextStart),
-        end: new Date(nextEnd),
-        isDeadline: event.isDeadline,
-        description: event.description,
-        createdBy: event.createdBy,
-        invited: event.invited,
-        color: event.color,
-        repetition: repetition,
-        endRepetition: endRepetition,
-        status: 'active',
-        parentEvent: event._id // Collegamento all'evento originale
-      });
+      if(nextStart <= endDate){
+        // Crea un nuovo evento per ogni ripetizione
+        const newEvent = new Event({
+          title: event.title,
+          start: new Date(nextStart),
+          end: new Date(nextEnd),
+          isDeadline: event.isDeadline,
+          description: event.description,
+          createdBy: event.createdBy,
+          invited: event.invited,
+          color: event.color,
+          repetition: repetition,
+          endRepetition: endRepetition,
+          status: 'active',
+          parentEvent: event._id // Collegamento all'evento originale
+        });
 
-      repetitions.push(newEvent);
+        repetitions.push(newEvent);
+      }
   }
 
   try {
@@ -214,6 +239,11 @@ const handleRepetedEvents = async (event) => {
   } catch (error) {
       console.error('Errore durante il salvataggio delle ripetizioni:', error);
   }
+};
+
+const getDaysInMonth = (month, year) => { 
+  
+  return new Date(year, month + 1, 0).getDate();
 };
 
 module.exports = router;
