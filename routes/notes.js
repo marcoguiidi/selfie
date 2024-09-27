@@ -13,6 +13,23 @@ router.get('/', authenticateJWT, async (req, res) => {
   }
 });
 
+router.get('/latest', authenticateJWT, async (req, res) => {
+  try {
+      const latestNote = await Note.findOne({ createdBy: req.user.id })
+          .populate('category', 'name')
+          .sort({ creationDate: -1 }); // Ordina per creationDate in ordine decrescente
+
+      if (!latestNote) {
+          return res.status(404).json({ message: 'No notes found' });
+      }
+
+      res.json(latestNote); // Restituisci solo l'ultima nota
+  } catch (error) {
+      console.error('Error fetching latest note:', error);
+      res.status(500).json({ message: 'Error fetching notes' });
+  }
+});
+
 // Aggiungi una nuova nota
 router.post('/', authenticateJWT, async (req, res) => {
   const { title, content, category } = req.body;

@@ -16,7 +16,7 @@
 }
 
 .page-content {
-    margin-top: 60px; /* Altezza della navbar */
+    margin-top: 30px; /* Altezza della navbar */
     padding: 20px; /* Spaziatura interna */
     transition: margin-top 0.3s ease; /* Animazione per il cambiamento del margine */
 }
