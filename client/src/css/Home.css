@@ -5,7 +5,7 @@
     margin-top: 20px;
 }
 
-.card {
+.req {
     border: 1px solid #ccc;
     padding: 20px;
     margin: 10px; /* Aggiungi margine per lo spazio */
@@ -15,19 +15,19 @@
 }
 
 /* Hover effect */
-.card:hover {
+.req:hover {
     transform: scale(1.05);
 }
 
 /* Media query per schermi più piccoli */
 @media (max-width: 768px) {
-    .card {
+    .req {
         flex: 1 1 calc(50% - 20px); /* Massimo 2 per riga */
     }
 }
 
 @media (max-width: 480px) {
-    .card {
+    .req {
         flex: 1 1 100%; /* Massimo 1 per riga */
     }
 }

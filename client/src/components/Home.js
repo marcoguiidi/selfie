@@ -45,7 +45,7 @@ const Home = () => {
         <div className='page-content'>
             <h1>Welcome to Home</h1>
             <div className='grid'>
-                <div className='card' onClick={() => window.location.href = "/calendar"}>
+                <div className='req' onClick={() => window.location.href = "/calendar"}>
                     <h2>Calendar</h2>
                     {/* Mostra gli eventi in Agenda View */}
                     {events.length > 0 ? (
@@ -72,7 +72,7 @@ const Home = () => {
                         <p>No events available.</p>
                     )}
                 </div>
-                <div className='card' onClick={() => window.location.href = "/notes"}>
+                <div className='req' onClick={() => window.location.href = "/notes"}>
                     <h2>Latest Note</h2>
                     {/* Mostra l'ultima nota creata */}
                     {latestNote ? (
