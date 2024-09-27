@@ -163,9 +163,12 @@ const AdvancedPomodoroTimer = () => {
         timeMachineDate: timeMachineDate ? timeMachineDate.toISOString() : undefined
       }, getAuthConfig());
       debugLog(`Session ${action} response:`, JSON.stringify(response.data, null, 2));
-      setCurrentSession(response.data);
-      setTimerStatus(action === 'pause' ? 'PAUSED' : 'ACTIVE');
-      setIsRunning(action !== 'pause');
+      if (action === 'abort') resetTimer();
+      else {
+        setCurrentSession(response.data);
+        setTimerStatus(action === 'pause' ? 'PAUSED' : 'ACTIVE');
+        setIsRunning(action !== 'pause');
+      }
     } catch (error) {
       console.error(`Error ${action} session:`, error);
       debugLog('Error details:', error.response?.data || error.message);

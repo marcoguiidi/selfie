@@ -99,15 +99,11 @@ const MyCalendar = () => {
             const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            // setEvents((prevEvents) =>
-            //   prevEvents.map((e) => (e._id === selectedEvent._id ? { ...response.data } : e))
-            // );
 
           } else {
             const response = await axios.post('/api/events', eventData, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            // setEvents([...events, { ...response.data }]);
 
           }
           
