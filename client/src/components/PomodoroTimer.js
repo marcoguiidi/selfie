@@ -16,6 +16,7 @@ const AdvancedPomodoroTimer = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentCycle, setCurrentCycle] = useState(1);
   const [timeMachineStartTime, setTimeMachineStartTime] = useState(null);
+  const [timeMachineInitialDate, setTimeMachineInitialDate] = useState(new Date());
   
   const [studyDuration, setStudyDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
@@ -38,12 +39,12 @@ const AdvancedPomodoroTimer = () => {
     const now = timeMachineDate || new Date();
     const startTime = new Date(data.startTime);
     const elapsed = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
-  
+
     let sessionState;
     let newDuration;
-  
+
     const totalSessionDuration = data.durationMinutes * 60;
-  
+
     if (data.pausedTime) {
       sessionState = 'PAUSED';
       const pausedDuration = Math.max(0, (now.getTime() - new Date(data.pausedTime).getTime()) / 1000);
@@ -58,13 +59,13 @@ const AdvancedPomodoroTimer = () => {
       sessionState = 'ACTIVE';
       newDuration = Math.max(0, totalSessionDuration - (elapsed - data.totalPausedDuration));
     }
-  
+
     if (newDuration === 0 && !data.completed) {
       newDuration = totalSessionDuration;
       sessionState = 'ACTIVE';
       debugLog('Session not completed but duration is 0. Setting to full duration.');
     }
-  
+
     debugLog('Timer calculation:', { elapsed, totalPausedDuration: data.totalPausedDuration, newDuration, sessionState });
     setDuration(Math.round(newDuration));
     updateTimerDisplay(Math.round(newDuration));
@@ -79,7 +80,7 @@ const AdvancedPomodoroTimer = () => {
     setShowSetup(false);
     debugLog('Timer initialized:', { sessionState, newDuration, cycle: data.cycle });
   }, []);
-  
+
   const fetchSessionData = useCallback(async (date = null, cheated = false) => {
     debugLog('fetchSessionData called with:', { date, cheated });
     setTimerStatus('LOADING');
@@ -117,8 +118,14 @@ const AdvancedPomodoroTimer = () => {
     setIsRunning(false);
     updateTimerDisplay(studyDuration * 60);
     setShowSetup(true);
+    
+    if (!isTimeMachineActive) {
+      setCurrentDate(new Date());
+      setTimeMachineStartTime(null);
+    }
+    
     debugLog('Timer reset complete');
-  };
+  };  
 
   const startNewSession = async () => {
     debugLog('Starting a new session...');
@@ -146,6 +153,38 @@ const AdvancedPomodoroTimer = () => {
     }
   };
 
+  const completeSession = async (state) => {
+    debugLog(`Completing session: ${state}`);
+    try {
+      const timeMachineDate = isTimeMachineActive
+        ? new Date(currentDate.getTime() + (Date.now() - timeMachineStartTime))
+        : undefined;
+      
+      const response = await axios.patch(`/api/pomodoro/${currentSession._id}/stop`, {
+        action: 'stop',
+        state,
+        timeMachineDate: timeMachineDate ? timeMachineDate.toISOString() : undefined
+      }, getAuthConfig());
+      debugLog(`Session completed response:`, JSON.stringify(response.data, null, 2));
+      
+      if (state === 'aborted' || (state === 'completed' && response.data.cycle === totalCycles)) {
+        debugLog('Resetting timer due to abort or final cycle completion');
+        resetTimer();
+      } else if (state === 'interval') {
+        debugLog('Initializing timer for interval');
+        setCurrentSession(response.data);
+        initializeTimer(response.data, timeMachineDate);
+      } else {
+        debugLog('Starting new session');
+        startNewSession();
+      }
+    } catch (error) {
+      console.error(`Error completing session:`, error);
+      debugLog('Error details:', error.response?.data || error.message);
+      setError(`Failed to complete session.`);
+    }
+  };
+
   const performSessionAction = async (action, state = null) => {
     if (!currentSession) {
       debugLog(`Attempt to ${action} with no current session`);
@@ -163,12 +202,9 @@ const AdvancedPomodoroTimer = () => {
         timeMachineDate: timeMachineDate ? timeMachineDate.toISOString() : undefined
       }, getAuthConfig());
       debugLog(`Session ${action} response:`, JSON.stringify(response.data, null, 2));
-      if (action === 'abort') resetTimer();
-      else {
-        setCurrentSession(response.data);
-        setTimerStatus(action === 'pause' ? 'PAUSED' : 'ACTIVE');
-        setIsRunning(action !== 'pause');
-      }
+      setCurrentSession(response.data);
+      setTimerStatus(action === 'pause' ? 'PAUSED' : 'ACTIVE');
+      setIsRunning(action !== 'pause');
     } catch (error) {
       console.error(`Error ${action} session:`, error);
       debugLog('Error details:', error.response?.data || error.message);
@@ -178,7 +214,6 @@ const AdvancedPomodoroTimer = () => {
 
   const pauseSession = () => performSessionAction('pause');
   const resumeSession = () => performSessionAction('resume');
-  const completeSession = (state) => performSessionAction('stop', state);
 
   const updateTimerDisplay = (time) => {
     const minutes = Math.floor(time / 60);
@@ -192,9 +227,9 @@ const AdvancedPomodoroTimer = () => {
   }, [fetchSessionData]);
 
   useEffect(() => {
-    debugLog('Timer effect running. isRunning:', isRunning, 'duration:', duration);
+    debugLog('Timer effect running. isRunning:', isRunning, 'duration:', duration, 'timerStatus:', timerStatus, 'currentSession:', currentSession ? currentSession._id : 'null');
     let timer;
-    if (isRunning && duration > 0) {
+    if (isRunning && duration > 0 && timerStatus !== 'READY' && currentSession) {
       timer = setInterval(() => {
         setDuration((prevDuration) => {
           const newDuration = prevDuration - 1;
@@ -215,7 +250,8 @@ const AdvancedPomodoroTimer = () => {
         clearInterval(timer);
       }
     };
-  }, [isRunning, duration, currentSession]);
+  }, [isRunning, duration, timerStatus, currentSession]);
+
 
   const handleStartResume = () => {
     debugLog('handleStartResume called. Current status:', timerStatus);
@@ -242,6 +278,7 @@ const AdvancedPomodoroTimer = () => {
     setIsTimeMachineOpen(false);
     setIsTimeMachineActive(false);
     setTimeMachineStartTime(null);
+    setTimeMachineInitialDate(now);
     fetchSessionData(now, false);
   };
 
@@ -262,6 +299,18 @@ const AdvancedPomodoroTimer = () => {
     updateTimerDisplay(setupData.studyDuration * 60);
   };
 
+  const openTimeMachine = () => {
+    let initialDate;
+    if (isTimeMachineActive) {
+      const elapsedTime = Date.now() - timeMachineStartTime;
+      initialDate = new Date(currentDate.getTime() + elapsedTime);
+    } else {
+      initialDate = new Date();
+    }
+    setTimeMachineInitialDate(initialDate);
+    setIsTimeMachineOpen(true);
+  };
+
   return (
     <div className="pomodoro-container">
       <h1>Advanced Pomodoro Timer</h1>
@@ -278,7 +327,7 @@ const AdvancedPomodoroTimer = () => {
           </button>
           <button onClick={pauseSession} disabled={!isRunning}>Pause</button>
           <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
-          <button onClick={() => setIsTimeMachineOpen(true)}>Time Machine</button>
+          <button onClick={openTimeMachine}>Time Machine</button>
           {isTimeMachineActive && (
             <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
           )}
@@ -287,6 +336,7 @@ const AdvancedPomodoroTimer = () => {
             onRequestClose={() => setIsTimeMachineOpen(false)}
             onSetDate={handleSetDate}
             onResetDate={handleResetDate}
+            initialDate={timeMachineInitialDate}
           />
         </>
       )}
