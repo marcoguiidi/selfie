@@ -23,15 +23,18 @@ const MyCalendar = () => {
     const [initialStart, setInitialStart] = useState(null);
     
 
-    const fetchEvents = async () => {
+    const fetchEvents = async (selectedDate) => {
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.get('/api/events', {
                 headers: {
                     Authorization: `Bearer ${token}`
+                },
+                params: {
+                    currentDate: selectedDate || new Date() // Usa la data selezionata o la data attuale
                 }
             });
-
+    
             const events = response.data.map(event => ({
                 ...event,
                 start: new Date(event.start),
@@ -42,6 +45,7 @@ const MyCalendar = () => {
             console.error('Error fetching events:', err.response ? err.response.data : err.message);
         }
     };
+    
 
     const fetchCurrentUser = async () => {
         try {
@@ -117,11 +121,14 @@ const MyCalendar = () => {
     const eventStyleGetter = (event) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
-        const isExpired = event.isDeadline && currentDate > eventEnd;
+        const isExpired = event.status === 'expired';
+        const isCompleted = event.status === 'completed';
         const isPast = currentDate > eventEnd;
         
         let backgroundColor = event.color || '#007bff';
-        if (isExpired) {
+        if (isCompleted) {
+            backgroundColor = '#5cb85c';
+        } else if (isExpired) {
             backgroundColor = '#d9534f';
         } else if (isPast) {
             backgroundColor = '#6c757d';
@@ -200,6 +207,22 @@ const MyCalendar = () => {
             console.error('Error declining event:', err.response ? err.response.data : err.message);
         }
     };
+
+    const handleCompleteEvent = async (eventId) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(`/api/events/${eventId}/complete`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setDetailModalOpen(false);
+            fetchEvents();
+        } catch (error){
+            console.error('Error completing event:', error.response ? error.response.data : error.message);
+        }
+    };
     
 
     const openTimeMachine = () => {
@@ -210,7 +233,9 @@ const MyCalendar = () => {
         setCurrentDate(newDate);
         setDate(newDate);
         setTimeMachineOpen(false);
+        fetchEvents(newDate); // Passa la nuova data selezionata
     };
+    
 
     const resetToCurrentDate = () => {
         const now = new Date();
@@ -258,6 +283,7 @@ const MyCalendar = () => {
             onRequestClose={() => setDetailModalOpen(false)}
             event={selectedEvent}
             onEdit={handleEditEvent}
+            onComplete={handleCompleteEvent}
             onDelete={handleDeleteEvent}
             currentUser={currentUser}
             onDecline={handleDeclineEvent}
