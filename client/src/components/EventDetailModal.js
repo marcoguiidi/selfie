@@ -6,7 +6,7 @@ import "../css/EventDetailModal.css";
 
 Modal.setAppElement('#root'); // Necessario per accessibilità
 
-const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, currentUser, onDecline }) => {
+const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, onComplete, currentUser, onDecline }) => {
     const [parentEventDetails, setParentEventDetails] = useState(null);
 
     useEffect(() => {
@@ -74,6 +74,9 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, cur
                         </>
                     ) : (
                         <button className="decline" onClick={() => onDecline(event._id)}>Decline</button>
+                    )}
+                    {event.isDeadline && event.status !== 'completed' && (
+                        <button className="complete" onClick={() => onComplete(event._id)}>Complete</button>
                     )}
                     <button className="cancel" onClick={onRequestClose}>Close</button>
                 </div>

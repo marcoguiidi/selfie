@@ -7,23 +7,40 @@ const authenticateJWT = require('../middleware/authenticateJWT');
 
 // Ottieni gli eventi creati dall'utente o a cui è invitato
 router.get('/', authenticateJWT, async (req, res) => {
-    try {
-        const userEmail = req.user.email;
+  try {
+      const userEmail = req.user.email;
+      const now = req.query.currentDate ? new Date(req.query.currentDate) : new Date(); // Usa la data passata o la data attuale
 
-        // Trova eventi creati dall'utente o a cui è stato invitato
-        const events = await Event.find({
-            $or: [
-                { createdBy: req.user.id },
-                { invited: { $in: [userEmail] } }
-            ]
-        }).populate('createdBy', 'email');
+      // Trova eventi creati dall'utente o a cui è stato invitato
+      let events = await Event.find({
+          $or: [
+              { createdBy: req.user.id },
+              { invited: { $in: [userEmail] } }
+          ]
+      }).populate('createdBy', 'email');
 
-        res.json(events);
-    } catch (err) {
-        console.error('Server Error:', err);
-        res.status(500).json({ message: 'Server error' });
-    }
+      // Controlla gli eventi e aggiorna quelli scaduti con isDeadline=true
+      const updatedEvents = await Promise.all(events.map(async (event) => {
+          if (event.isDeadline === true && event.status !== 'completed' && new Date(event.end) < now) {
+            event.start = now;  
+            event.end = now; // Sposta la data di end al tempo attuale
+              event.status = 'expired';
+              await event.save(); // Salva l'evento aggiornato
+          } else if(event.isDeadline === false && event.status !== 'active'){
+            event.status = 'active';
+            await event.save(); // Salva l'evento aggiornato
+          }
+          return event;
+      }));
+
+      res.json(updatedEvents);
+  } catch (err) {
+      console.error('Server Error:', err);
+      res.status(500).json({ message: 'Server error' });
+  }
 });
+
+
 
 // Ottieni un singolo evento per ID
 router.get('/:id', authenticateJWT, async (req, res) => {
@@ -93,11 +110,11 @@ router.put('/:id', authenticateJWT, async (req, res) => {
       event.invited = invited;
       event.color = color;
       const now = new Date();
-      if (event.isDeadline && event.end < now) {
-        event.status = 'expired';
-      } else {
-        event.status = 'active';
-      }
+      // if (event.isDeadline && event.end < now) {
+      //   event.status = 'expired';
+      // } else {
+      //   event.status = 'active';
+      // }
       if(repetition !== 'no-repetition' || repetition !== event.repetition || endRepetition !== event.endRepetition) {
         event.repetition = repetition;
         event.endRepetition = endRepetition;
@@ -132,6 +149,32 @@ router.delete('/:id', authenticateJWT, async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
+});
+
+router.post('/:eventId/complete', authenticateJWT, async (req, res) => {
+  try {
+        const { eventId } = req.params;
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Verifica se l'utente è il creatore dell'evento
+        if (event.createdBy.toString()!== req.user.id) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        if(!event.isDeadline){
+          return res.status(400).json({ message: 'Event is not a deadline' });
+        }
+
+        event.status = 'completed';
+        await event.save();
+
+        res.json({ message: 'Event completed successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }  
 });
 
 // Declina un invito a un evento

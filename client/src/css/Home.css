@@ -1,0 +1,33 @@
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Spazio tra gli elementi */
+    margin-top: 20px;
+}
+
+.req {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin: 10px; /* Aggiungi margine per lo spazio */
+    flex: 1 1 calc(33% - 20px); /* Massimo 3 per riga, sottrai il margine */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+/* Hover effect */
+.req:hover {
+    transform: scale(1.05);
+}
+
+/* Media query per schermi più piccoli */
+@media (max-width: 768px) {
+    .req {
+        flex: 1 1 calc(50% - 20px); /* Massimo 2 per riga */
+    }
+}
+
+@media (max-width: 480px) {
+    .req {
+        flex: 1 1 100%; /* Massimo 1 per riga */
+    }
+}

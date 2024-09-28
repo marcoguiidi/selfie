@@ -38,3 +38,25 @@
     opacity: 1;
   }
   
+  .note-list {
+    display: flex;
+    flex-wrap: wrap; /* Permette di andare a capo */
+    gap: 1rem; /* Spazio tra i riquadri */
+}
+
+.note-list .card {
+    flex: 1 1 calc(33.33% - 1rem); /* Tre per riga */
+    min-width: 250px; /* Larghezza minima per i riquadri */
+}
+
+@media (max-width: 768px) {
+    .note-list .card {
+        flex: 1 1 calc(50% - 1rem); /* Due per riga sui dispositivi più piccoli */
+    }
+}
+
+@media (max-width: 480px) {
+    .note-list .card {
+        flex: 1 1 100%; /* Uno per riga sui dispositivi molto piccoli */
+    }
+}
