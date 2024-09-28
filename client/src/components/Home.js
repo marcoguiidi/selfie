@@ -67,9 +67,17 @@ const Home = () => {
                                     }}
                                 >
                                     <p><strong>{event.title}</strong></p>
-                                    <small>From: {moment(new Date(event.start)).format('YYYY-MM-DD, HH:mm')}</small>
-                                    <br />
-                                    <small> to: {moment(new Date(event.end)).format('YYYY-MM-DD, HH:mm')}</small>
+                                    { event.isDeadline ? (
+                                        <div>
+                                            <small>Deadline: {new Date(event.end).toLocaleString()}</small>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <small>Start Date: {new Date(event.start).toLocaleString()}</small>
+                                            <br />
+                                            <small>End Date: {new Date(event.end).toLocaleString()}</small>
+                                        </div>
+                                    )}
                                 </li>
                             ))}
                         </ul>
