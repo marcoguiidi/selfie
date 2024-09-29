@@ -1,22 +1,50 @@
+/* Stile generale della pagina */
+.page-content {
+    padding: 20px;
+}
+
+/* Griglia degli elementi (eventi e note) */
 .grid {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between; /* Spazio tra gli elementi */
+    justify-content: space-between;
     margin-top: 20px;
 }
 
+/* Stile dei riquadri per eventi e note */
 .req {
     border: 1px solid #ccc;
     padding: 20px;
-    margin: 10px; /* Aggiungi margine per lo spazio */
-    flex: 1 1 calc(33% - 20px); /* Massimo 3 per riga, sottrai il margine */
+    margin: 10px;
+    flex: 1 1 calc(33% - 20px); /* Massimo 3 per riga */
     cursor: pointer;
     transition: transform 0.2s;
 }
 
-/* Hover effect */
 .req:hover {
     transform: scale(1.05);
+}
+
+/* Sezione del calendario con selettore */
+.calendar-section {
+    flex: 1 1 calc(33% - 20px); /* Stessa larghezza del div del calendario */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+/* Selettore di eventi */
+.events-selector {
+    width: 20%; 
+    height: min-content;
+    padding: 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    outline: none;
+    background-color: #f9f9f9;
+    color: #333;
+    margin-bottom: 5px; /* Spazio tra selettore e calendario */
 }
 
 /* Media query per schermi più piccoli */

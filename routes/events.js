@@ -19,16 +19,17 @@ router.get('/', authenticateJWT, async (req, res) => {
           ]
       }).populate('createdBy', 'email');
 
-      // Controlla gli eventi e aggiorna quelli scaduti con isDeadline=true
+
       const updatedEvents = await Promise.all(events.map(async (event) => {
-          if (event.isDeadline === true && event.status !== 'completed' && new Date(event.end) < now) {
-            event.start = now;  
-            event.end = now; // Sposta la data di end al tempo attuale
-              event.status = 'expired';
-              await event.save(); // Salva l'evento aggiornato
-          } else if(event.isDeadline === false && event.status !== 'active'){
-            event.status = 'active';
-            await event.save(); // Salva l'evento aggiornato
+          if (event.isDeadline) {
+            if (event.end < now){
+              if (event.status == 'expired' || event.status == 'active'){
+                event.start = now;
+                event.end = now;
+                event.status = 'expired';
+                await event.save();
+              }
+            }
           }
           return event;
       }));
@@ -110,11 +111,6 @@ router.put('/:id', authenticateJWT, async (req, res) => {
       event.invited = invited;
       event.color = color;
       const now = new Date();
-      // if (event.isDeadline && event.end < now) {
-      //   event.status = 'expired';
-      // } else {
-      //   event.status = 'active';
-      // }
       if(repetition !== 'no-repetition' || repetition !== event.repetition || endRepetition !== event.endRepetition) {
         event.repetition = repetition;
         event.endRepetition = endRepetition;
