@@ -139,13 +139,19 @@ const AdvancedPomodoroTimer = () => {
         timeMachineDate: isTimeMachineActive ? currentDate.toISOString() : undefined
       }, getAuthConfig());
       debugLog('New session started:', JSON.stringify(response.data, null, 2));
-      setCurrentSession(response.data);
-      setDuration(response.data.durationMinutes * 60);
+      
+      // Extract the session data from the response
+      const newSession = response.data.session;
+      
+      setCurrentSession(newSession);
+      setDuration(newSession.durationMinutes * 60);
       setTimerStatus('ACTIVE');
       setIsRunning(true);
-      setCurrentCycle(response.data.cycle);
-      updateTimerDisplay(response.data.durationMinutes * 60);
+      setCurrentCycle(newSession.cycle);
+      updateTimerDisplay(newSession.durationMinutes * 60);
       setShowSetup(false);
+      
+      debugLog('Current session set to:', JSON.stringify(newSession, null, 2));
     } catch (error) {
       console.error('Error starting new session:', error);
       debugLog('Error details:', error.response?.data || error.message);
@@ -226,8 +232,17 @@ const AdvancedPomodoroTimer = () => {
     fetchSessionData();
   }, [fetchSessionData]);
 
+  // Update the useEffect for the timer to include more detailed logging
   useEffect(() => {
-    debugLog('Timer effect running. isRunning:', isRunning, 'duration:', duration, 'timerStatus:', timerStatus, 'currentSession:', currentSession ? currentSession._id : 'null');
+    debugLog('Timer effect running.', {
+      isRunning,
+      duration,
+      timerStatus,
+      currentSessionId: currentSession?._id,
+      currentCycle,
+      totalCycles
+    });
+    
     let timer;
     if (isRunning && duration > 0 && timerStatus !== 'READY' && currentSession) {
       timer = setInterval(() => {
@@ -250,7 +265,7 @@ const AdvancedPomodoroTimer = () => {
         clearInterval(timer);
       }
     };
-  }, [isRunning, duration, timerStatus, currentSession]);
+  }, [isRunning, duration, timerStatus, currentSession, currentCycle, totalCycles]);
 
 
   const handleStartResume = () => {

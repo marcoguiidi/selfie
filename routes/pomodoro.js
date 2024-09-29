@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const PomodoroSession = require('../models/PomodoroSession');
+const Event = require('../models/Event');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
 const debugLog = (...messages) => {
@@ -62,8 +63,29 @@ router.post('/start', authenticateJWT, async (req, res) => {
     session.cycle = lastCompletedSession ? (lastCompletedSession.cycle % lastCompletedSession.totalCycles) + 1 : 1;
 
     await session.save();
-    debugLog('New session saved:', session);
-    res.status(201).json(session);
+
+    // Create an event for the Pomodoro session
+    const eventData = {
+      title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+      start: now,
+      end: now,
+      isDeadline: true,
+      description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.breakMinutes} minutes break`,
+      createdBy: req.user.id,
+      invited: null, 
+      color: '#FF6347', // Tomato color for Pomodoro
+      repetition: 'no-repetition',
+      status: 'active'
+    };
+
+    const newEvent = new Event(eventData);
+    await newEvent.save();
+    debugLog('New event created for Pomodoro session:', newEvent);
+
+    res.status(201).json({
+      session: session,
+      // event: newEvent
+    });
   } catch (error) {
     console.error('Error starting new session:', error);
     res.status(400).json({ error: error.message });
@@ -104,13 +126,15 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
         switch (state) {
           case 'aborted':
             session.completed = true;
-            session.endTime = now;
+            // session.endTime = now;
             debugLog('Session aborted at:', now);
+            await updatePomodoroEvent(session, now);
             break;
           case 'completed':
             session.completed = true;
             session.endTime = now;
             debugLog('Session completed at:', now);
+            await updatePomodoroEvent(session, now);
             break;
           case 'interval':
             session.intervalTime = now;
@@ -131,7 +155,6 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
   debugLog('Inizio ricerca ultima sessione per l\'utente:', req.user.id);
@@ -171,7 +194,6 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
 
         if (elapsedTime < 0) {
           debugLog('Data richiesta anteriore alla startTime della sessione');
-          // Qui puoi decidere come gestire questo caso. Ad esempio:
           return res.status(400).json({ message: 'La data richiesta è anteriore all\'inizio della sessione' });
         } else if (elapsedTime >= specificLastSession.durationMinutes && elapsedTime < totalSessionTime) {
           debugLog('Sessione in intervallo, impostazione intervalTime');
@@ -181,8 +203,12 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
         } else if (elapsedTime >= totalSessionTime) {
           debugLog('Sessione completata, chiamata a completeSession');
           await completeSession(specificLastSession, date);
+          await updatePomodoroEvent(specificLastSession, date);
           debugLog('Creazione della prossima sessione');
           specificLastSession = await createNextSession(specificLastSession, date);
+          if (specificLastSession) {
+            await createPomodoroEvent(specificLastSession);
+          }
           debugLog('Nuova sessione creata:', JSON.stringify(specificLastSession, null, 2));
         }
       }
@@ -289,11 +315,50 @@ async function createNextSession(completedSession, date) {
   if (elapsedTime >= totalSessionTime) {
     debugLog('New session is already completed, recursively completing and creating next');
     await completeSession(newSession, date);
+    await updatePomodoroEvent(newSession, date);
     return await createNextSession(newSession, date);
   }
 
   debugLog('Returning new active session');
   return newSession;
+}
+
+async function updatePomodoroEvent(session, endTime) {
+  debugLog('Updating Pomodoro event for session:', session._id);
+  const event = await Event.findOne({
+    title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+    createdBy: session.userId,
+    start: session.startTime
+  });
+
+  if (event) {
+    event.end = endTime;
+    event.isDeadline = false;
+    await event.save();
+    debugLog('Associated event updated:', event);
+  } else {
+    debugLog('No associated event found for the session');
+  }
+}
+
+async function createPomodoroEvent(session) {
+  debugLog('Creating new Pomodoro event for session:', session._id);
+  const eventData = {
+    title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+    start: session.startTime,
+    end: session.startTime,
+    isDeadline: true,
+    description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.maxPausedDuration} minutes break`,
+    createdBy: session.userId,
+    invited: null, 
+    color: '#FF6347', // Tomato color for Pomodoro
+    repetition: 'no-repetition',
+    status: 'active'
+  };
+
+  const newEvent = new Event(eventData);
+  await newEvent.save();
+  debugLog('New event created for Pomodoro session:', newEvent);
 }
 
 module.exports = router;
