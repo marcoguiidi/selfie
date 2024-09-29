@@ -4,8 +4,10 @@ import "../css/TimeMachineModal.css";
 
 Modal.setAppElement('#root');
 
+// Funzione per formattare la data e l'ora in un formato compatibile con l'input datetime-local
 const formatDateTimeForInput = (date) => {
-  return date.toISOString().slice(0, 16);
+  const adjustedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000); // Aggiunge 2 ore
+  return adjustedDate.toISOString().slice(0, 16);
 };
 
 const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) => {
