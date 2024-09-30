@@ -8,6 +8,7 @@ const Home = () => {
     const [events, setEvents] = useState([]);
     const [orderEvents, setOrderEvents] = useState('next-events');
     const [latestNote, setLatestNote] = useState(null);
+    const [lastPomodoro, setLastPomodoro] = useState(null);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -98,17 +99,30 @@ const Home = () => {
             }
         };
 
+        const fetchPomodoro = async () => {
+            const token = localStorage.getItem('authToken');
+            try{
+                const response = await axios.get('/api/events/lastPomodoro', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setLastPomodoro(response.data);
+            } catch (error) {
+                console.error('Errore nel recupero del pomodoro:', error);
+            }
+        };
+
         fetchEvents();
         fetchLatestNote();
+        fetchPomodoro();
     }, [orderEvents]);
 
     return (
         <div className='page-content'>
-            <h1>Welcome to Home</h1>
+            <h1>Homepage</h1>
             
             {/* Selettore degli eventi */}
             <div className='events-selector-container'>
-                <label htmlFor="orderEvents">Seleziona eventi: </label>
+                <label htmlFor="orderEvents">Select Events: </label>
                 <select
                     id="orderEvents"
                     className="events-selector"
@@ -198,10 +212,18 @@ const Home = () => {
                         <p>No notes available.</p>
                     )}
                 </div>
+                <div className="req" onClick={() => window.location.href = "/pomodoro"}>
+                    { lastPomodoro ? (
+                        <div>
+                            <h2>{lastPomodoro.title}</h2>
+                            <p>{lastPomodoro.description}</p>
+                            { lastPomodoro.isDeadline && <p>To be completed</p> }
+                        </div>
+                    ) : (
+                        <h2>No Pomodoro session available.</h2>
+                    )}
+                </div>
             </div>
-            <Link to='/pomodoro'>
-                <button>Pomodoro</button>
-            </Link>
         </div>
     );
 };

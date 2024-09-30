@@ -64,3 +64,40 @@
   .hidden{
     display: none;
   }
+  
+  .pomodoro-animation {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+  }
+  
+  .pomodoro-animation svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  @keyframes study {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    75% { transform: rotate(-5deg); }
+  }
+  
+  @keyframes sleep {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(0, -5px); }
+  }
+  
+  @keyframes completed {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  
+  #pomodoro { fill: #ff6347; }
+  #eyes { fill: #ffffff; }
+  #mouth { fill: none; stroke: #ffffff; stroke-width: 2; }
+  #book { fill: #4a4a4a; }
+  #z { font: bold 24px sans-serif; fill: #4a4a4a; }
+  .hidden { display: none; }
+  .study { animation: study 2s ease-in-out infinite; }
+  .sleep { animation: sleep 2s ease-in-out infinite; }
+  .completed { animation: completed 1s ease-in-out infinite; }

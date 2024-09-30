@@ -116,7 +116,7 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
           </div>
         </div>
         <div className="event-modal-buttons">
-          <button type="submit" className="event-modal-save">SaSavelva</button>
+          <button type="submit" className="event-modal-save">Save</button>
           <button type="button" className="event-modal-cancel" onClick={onRequestClose}>Cancel</button>
         </div>
       </form>

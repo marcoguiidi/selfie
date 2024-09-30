@@ -48,7 +48,7 @@ const App = () => {
 
   return (
     <Router>
-      <ProtectedRoute element={<Navbar />} /> 
+      { isAuthenticated && <Navbar /> }
       <div className="page-content"> 
         <Routes>
           <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />

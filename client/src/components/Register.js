@@ -8,12 +8,14 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [birthday, setBirthday] = useState('');
+    const [realName, setRealName] = useState('');
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/auth/register', { username, email, password });
+            await axios.post('/api/auth/register', { username, email, password, realName, birthday });
             navigate('/login');
         } catch (err) {
             if (err.response && err.response.data) {
@@ -52,6 +54,24 @@ const Register = () => {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Real Name:</label>
+                    <input
+                        type="text"
+                        value={realName}
+                        onChange={(e) => setRealName(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Birthday:</label>
+                    <input
+                        type="date"
+                        value={birthday}
+                        onChange={(e) => setBirthday(e.target.value)}
                         required
                     />
                 </div>

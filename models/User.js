@@ -17,6 +17,14 @@ const userSchema = new Schema({
       type: String, 
       required: true 
     },
+    realName: {
+      type: String, 
+      required: true
+    },
+    birthday: {
+      type: Date, 
+      required: true
+    }
   });
 
 module.exports = mongoose.model('User', userSchema);

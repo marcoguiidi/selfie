@@ -52,10 +52,16 @@
     .req {
         flex: 1 1 calc(50% - 20px); /* Massimo 2 per riga */
     }
+    .events-selector{
+        width: fit-content;
+    }
 }
 
 @media (max-width: 480px) {
     .req {
         flex: 1 1 100%; /* Massimo 1 per riga */
+    }
+    .events-selector{
+        width: fit-content;
     }
 }

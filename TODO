@@ -1,0 +1,26 @@
+HOME
+- scelgo che ultima nota visualizzare (last edit, creation date, category)
+- view del pomodoro
+
+CALENDAR
+- notifiche
+
+POMODORO
+- animazione del pomodoro
+
+## miglioramento grafico generale
+
+- time machine nascosta per vista mobile
+
+ const eventData = {
+      title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+      start: now,
+      end: now,
+      isDeadline: true,
+      description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.breakMinutes} minutes break`,
+      createdBy: req.user.id,
+      invited: '', 
+      color: '#FF6347', // Tomato color for Pomodoro
+      repetition: 'no-repetition',
+      status: 'active'
+    };

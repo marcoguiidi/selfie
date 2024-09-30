@@ -267,6 +267,22 @@ const AdvancedPomodoroTimer = () => {
     };
   }, [isRunning, duration, timerStatus, currentSession, currentCycle, totalCycles]);
 
+  useEffect(() => {
+    const pomodoroState = getPomodoroState();
+    const svg = document.querySelector('.pomodoro-animation svg');
+    if (svg) {
+      svg.querySelectorAll('.study, .sleep, .completed').forEach(el => {
+        el.classList.add('hidden');
+      });
+      svg.querySelectorAll(`.${pomodoroState}`).forEach(el => {
+        el.classList.remove('hidden');
+      });
+      const pomodoroGroup = svg.querySelector('#pomodoro-group');
+      if (pomodoroGroup) {
+        pomodoroGroup.setAttribute('class', pomodoroState);
+      }
+    }
+  }, [timerStatus]);
 
   const handleStartResume = () => {
     debugLog('handleStartResume called. Current status:', timerStatus);
@@ -326,6 +342,13 @@ const AdvancedPomodoroTimer = () => {
     setIsTimeMachineOpen(true);
   };
 
+  const getPomodoroState = () => {
+    if (timerStatus === 'ACTIVE') return 'study';
+    if (timerStatus === 'INTERVAL' || timerStatus === 'PAUSED') return 'sleep';
+    if (timerStatus === 'COMPLETED') return 'completed';
+    return '';
+  };
+
   return (
     <div className="pomodoro-container">
       <h1>Advanced Pomodoro Timer</h1>
@@ -334,6 +357,26 @@ const AdvancedPomodoroTimer = () => {
         <PomodoroSetup onSetupComplete={handleSetupComplete} />
       ) : (
         <>
+          <div className="pomodoro-animation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+            <g id="pomodoro-group">
+              <circle id="pomodoro" cx="100" cy="100" r="80" />
+              <circle id="eyes" cx="80" cy="90" r="10" />
+              <circle id="eyes" cx="120" cy="90" r="10" />
+              <path id="mouth" d="M70 120 Q100 150 130 120" className="study sleep" />
+              <path id="smile" d="M70 120 Q100 150 130 120" className="completed hidden" />
+            </g>
+            
+            <g id="study-elements" className="study">
+              <rect id="book" x="50" y="160" width="100" height="20" />
+            </g>
+            
+            <g id="sleep-elements" className="sleep hidden">
+              <text id="z" x="150" y="50">Z</text>
+              <text id="z" x="170" y="30">Z</text>
+            </g>
+          </svg>
+          </div>
           <div className="timer-display">{timerDisplay}</div>
           <div className="timer-status">{timerStatus}</div>
           <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>

@@ -47,6 +47,30 @@ router.get('/', authenticateJWT, async (req, res) => {
   }
 });
 
+router.get('/lastPomodoro', authenticateJWT, async (req, res) => {
+  try {
+    // Trova l'evento che inizia con "pomodoro Session" e ha il colore '#FF6347'
+    const pomodoro = await Event.findOne({
+      title: { $regex: '^Pomodoro Session', $options: 'i' }, // Usa regex per cercare all'inizio
+      color: '#FF6347'
+    })
+      .sort({ end: -1 }) // Ordina per endDate in ordine decrescente
+      .exec(); // Esegui la query
+
+    // Se non viene trovato nessun pomodoro, restituisci un messaggio appropriato
+    if (!pomodoro) {
+      return res.status(404).json({ message: 'Nessun pomodoro trovato' });
+    }
+
+    // Restituisci l'evento trovato
+    res.status(200).json(pomodoro);
+  } catch (err) {
+    console.error('Error fetching last pomodoro:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 
 
 // Ottieni un singolo evento per ID
