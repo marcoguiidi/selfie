@@ -26,16 +26,50 @@ const AdvancedPomodoroTimer = () => {
 
   const [showSetup, setShowSetup] = useState(true);
 
-  const getAuthConfig = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-  });
+  const [isAllCompleted, setIsAllCompleted] = useState(false);
+  const [maxCompletedCycles, setMaxCompletedCycles] = useState(0);
 
-  const debugLog = (...messages) => {
+  const getAuthConfig = useCallback(() => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+  }), []);
+
+  const debugLog = useCallback((...messages) => {
     console.log(new Date().toISOString(), ...messages);
-  };
+  }, []);
+
+  const updateTimerDisplay = useCallback((time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    setTimerDisplay(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+  }, []);
+
+  const resetTimer = useCallback(() => {
+    debugLog('Resetting timer');
+    setCurrentSession(null);
+    setDuration(studyDuration * 60);
+    setTimerStatus('READY');
+    setCurrentCycle(1);
+    setIsRunning(false);
+    updateTimerDisplay(studyDuration * 60);
+    setShowSetup(true);
+    
+    if (!isTimeMachineActive) {
+      setCurrentDate(new Date());
+      setTimeMachineStartTime(null);
+    }
+    
+    debugLog('Timer reset complete');
+  }, [debugLog, studyDuration, isTimeMachineActive, updateTimerDisplay]);
 
   const initializeTimer = useCallback((data, timeMachineDate = null) => {
     debugLog('Initializing timer with data:', JSON.stringify(data, null, 2));
+    
+    if (!data.startTime || !data.durationMinutes) {
+      debugLog('Invalid session data, resetting timer');
+      resetTimer();
+      return;
+    }
+
     const now = timeMachineDate || new Date();
     const startTime = new Date(data.startTime);
     const elapsed = Math.max(0, (now.getTime() - startTime.getTime()) / 1000);
@@ -79,7 +113,7 @@ const AdvancedPomodoroTimer = () => {
     setTotalCycles(data.totalCycles);
     setShowSetup(false);
     debugLog('Timer initialized:', { sessionState, newDuration, cycle: data.cycle });
-  }, []);
+  }, [debugLog, resetTimer, updateTimerDisplay]);
 
   const fetchSessionData = useCallback(async (date = null, cheated = false) => {
     debugLog('fetchSessionData called with:', { date, cheated });
@@ -95,11 +129,18 @@ const AdvancedPomodoroTimer = () => {
       debugLog('Fetching from URL:', url);
       const response = await axios.get(url, getAuthConfig());
       debugLog('Session data received:', JSON.stringify(response.data, null, 2));
-      if (response.data && !response.data.completed) {
+      
+      if (response.data && response.data.status === 'completed') {
+        debugLog('All cycles completed, showing completion screen');
+        setIsAllCompleted(true);
+        setMaxCompletedCycles(response.data.cycle || totalCycles);
+        setTimerStatus('COMPLETED');
+        setShowSetup(false);
+      } else if (response.data && !response.data.completed) {
         setCurrentSession(response.data);
         initializeTimer(response.data, date);
       } else {
-        debugLog('No active session found or session completed, resetting timer');
+        debugLog('No active session found, resetting timer');
         resetTimer();
       }
     } catch (error) {
@@ -107,27 +148,9 @@ const AdvancedPomodoroTimer = () => {
       debugLog('Error details:', error.response?.data || error.message);
       resetTimer();
     }
-  }, [initializeTimer]);
+  }, [debugLog, getAuthConfig, initializeTimer, resetTimer, totalCycles]);
 
-  const resetTimer = () => {
-    debugLog('Resetting timer');
-    setCurrentSession(null);
-    setDuration(studyDuration * 60);
-    setTimerStatus('READY');
-    setCurrentCycle(1);
-    setIsRunning(false);
-    updateTimerDisplay(studyDuration * 60);
-    setShowSetup(true);
-    
-    if (!isTimeMachineActive) {
-      setCurrentDate(new Date());
-      setTimeMachineStartTime(null);
-    }
-    
-    debugLog('Timer reset complete');
-  };  
-
-  const startNewSession = async () => {
+  const startNewSession = useCallback(async () => {
     debugLog('Starting a new session...');
     try {
       const response = await axios.post('/api/pomodoro/start', {
@@ -140,7 +163,6 @@ const AdvancedPomodoroTimer = () => {
       }, getAuthConfig());
       debugLog('New session started:', JSON.stringify(response.data, null, 2));
       
-      // Extract the session data from the response
       const newSession = response.data.session;
       
       setCurrentSession(newSession);
@@ -157,9 +179,9 @@ const AdvancedPomodoroTimer = () => {
       debugLog('Error details:', error.response?.data || error.message);
       setError('Failed to start new session.');
     }
-  };
+  }, [breakDuration, currentDate, cyclesBeforeLongBreak, debugLog, getAuthConfig, isTimeMachineActive, longBreakDuration, studyDuration, totalCycles, updateTimerDisplay]);
 
-  const completeSession = async (state) => {
+  const completeSession = useCallback(async (state) => {
     debugLog(`Completing session: ${state}`);
     try {
       const timeMachineDate = isTimeMachineActive
@@ -173,9 +195,14 @@ const AdvancedPomodoroTimer = () => {
       }, getAuthConfig());
       debugLog(`Session completed response:`, JSON.stringify(response.data, null, 2));
       
-      if (state === 'aborted' || (state === 'completed' && response.data.cycle === totalCycles)) {
-        debugLog('Resetting timer due to abort or final cycle completion');
+      if (state === 'aborted') {
+        debugLog('Session aborted, resetting timer');
         resetTimer();
+      } else if (state === 'completed' && response.data.cycle === totalCycles) {
+        debugLog('All cycles completed');
+        setIsAllCompleted(true);
+        setMaxCompletedCycles(response.data.cycle);
+        setTimerStatus('COMPLETED');
       } else if (state === 'interval') {
         debugLog('Initializing timer for interval');
         setCurrentSession(response.data);
@@ -189,9 +216,9 @@ const AdvancedPomodoroTimer = () => {
       debugLog('Error details:', error.response?.data || error.message);
       setError(`Failed to complete session.`);
     }
-  };
+  }, [currentDate, currentSession, debugLog, getAuthConfig, initializeTimer, isTimeMachineActive, resetTimer, startNewSession, timeMachineStartTime, totalCycles]);
 
-  const performSessionAction = async (action, state = null) => {
+  const performSessionAction = useCallback(async (action, state = null) => {
     if (!currentSession) {
       debugLog(`Attempt to ${action} with no current session`);
       return;
@@ -216,23 +243,23 @@ const AdvancedPomodoroTimer = () => {
       debugLog('Error details:', error.response?.data || error.message);
       setError(`Failed to ${action} session.`);
     }
-  };
+  }, [currentDate, currentSession, debugLog, getAuthConfig, isTimeMachineActive, timeMachineStartTime]);
 
-  const pauseSession = () => performSessionAction('pause');
-  const resumeSession = () => performSessionAction('resume');
+  const pauseSession = useCallback(() => performSessionAction('pause'), [performSessionAction]);
+  const resumeSession = useCallback(() => performSessionAction('resume'), [performSessionAction]);
 
-  const updateTimerDisplay = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    setTimerDisplay(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-  };
+  const getPomodoroState = useCallback(() => {
+    if (timerStatus === 'ACTIVE') return 'study';
+    if (timerStatus === 'INTERVAL' || timerStatus === 'PAUSED') return 'sleep';
+    if (timerStatus === 'COMPLETED') return 'completed';
+    return '';
+  }, [timerStatus]);
 
   useEffect(() => {
     debugLog('Initial useEffect running, fetching session data');
     fetchSessionData();
-  }, [fetchSessionData]);
+  }, [fetchSessionData, debugLog]);
 
-  // Update the useEffect for the timer to include more detailed logging
   useEffect(() => {
     debugLog('Timer effect running.', {
       isRunning,
@@ -265,10 +292,10 @@ const AdvancedPomodoroTimer = () => {
         clearInterval(timer);
       }
     };
-  }, [isRunning, duration, timerStatus, currentSession, currentCycle, totalCycles]);
+  }, [isRunning, duration, timerStatus, currentSession, currentCycle, totalCycles, debugLog, updateTimerDisplay, completeSession]);
 
   useEffect(() => {
-    const pomodoroState = getPomodoroState();
+    const pomodoroState = isAllCompleted ? 'completed' : getPomodoroState();
     const svg = document.querySelector('.pomodoro-animation svg');
     if (svg) {
       svg.querySelectorAll('.study, .sleep, .completed').forEach(el => {
@@ -284,27 +311,36 @@ const AdvancedPomodoroTimer = () => {
         }
       }
     }
-  }, [timerStatus]);
+  }, [timerStatus, isAllCompleted, getPomodoroState]);
 
-  const handleStartResume = () => {
+  const renderCompletionScreen = useCallback(() => (
+    <div className="completion-screen">
+      {renderPomodoroSVG()}
+      <h2>Congratulations!</h2>
+      <p>{maxCompletedCycles}/{totalCycles} COMPLETED</p>
+      <button onClick={resetTimer}>Start New Session</button>
+    </div>
+  ), [maxCompletedCycles, totalCycles, resetTimer]);
+
+  const handleStartResume = useCallback(() => {
     debugLog('handleStartResume called. Current status:', timerStatus);
     if (timerStatus === 'READY') {
       startNewSession();
     } else if (timerStatus === 'PAUSED') {
       resumeSession();
     }
-  };
+  }, [debugLog, timerStatus, startNewSession, resumeSession]);
   
-  const handleSetDate = (newDate) => {
+  const handleSetDate = useCallback((newDate) => {
     debugLog('handleSetDate called with:', newDate);
     setCurrentDate(newDate);
     setIsTimeMachineOpen(false);
     setIsTimeMachineActive(true);
     setTimeMachineStartTime(Date.now());
     fetchSessionData(newDate, true);
-  };
+  }, [debugLog, fetchSessionData]);
   
-  const handleResetDate = () => {
+  const handleResetDate = useCallback(() => {
     debugLog('handleResetDate called');
     const now = new Date();
     setCurrentDate(now);
@@ -313,14 +349,14 @@ const AdvancedPomodoroTimer = () => {
     setTimeMachineStartTime(null);
     setTimeMachineInitialDate(now);
     fetchSessionData(now, false);
-  };
+  }, [debugLog, fetchSessionData]);
 
-  const handleAbort = async () => {
+  const handleAbort = useCallback(async () => {
     debugLog('handleAbort called');
     await completeSession('aborted');
-  };
+  }, [debugLog, completeSession]);
 
-  const handleSetupComplete = (setupData) => {
+  const handleSetupComplete = useCallback((setupData) => {
     debugLog('Setup completed with data:', setupData);
     setStudyDuration(setupData.studyDuration);
     setBreakDuration(setupData.breakDuration);
@@ -330,9 +366,9 @@ const AdvancedPomodoroTimer = () => {
     setShowSetup(false);
     setTimerStatus('READY');
     updateTimerDisplay(setupData.studyDuration * 60);
-  };
+  }, [debugLog, updateTimerDisplay]);
 
-  const openTimeMachine = () => {
+  const openTimeMachine = useCallback(() => {
     let initialDate;
     if (isTimeMachineActive) {
       const elapsedTime = Date.now() - timeMachineStartTime;
@@ -342,14 +378,56 @@ const AdvancedPomodoroTimer = () => {
     }
     setTimeMachineInitialDate(initialDate);
     setIsTimeMachineOpen(true);
-  };
+  }, [isTimeMachineActive, timeMachineStartTime, currentDate]);
 
-  const getPomodoroState = () => {
-    if (timerStatus === 'ACTIVE') return 'study';
-    if (timerStatus === 'INTERVAL' || timerStatus === 'PAUSED') return 'sleep';
-    if (timerStatus === 'COMPLETED') return 'completed';
-    return '';
-  };
+  const renderPomodoroSVG = useCallback(() => (
+    <div className={`pomodoro-animation ${timerStatus === 'COMPLETED' ? 'completed' : ''}`}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <g id="pomodoro-group">
+          <circle id="pomodoro" cx="100" cy="100" r="70" fill="#ff6347" />
+          
+          <g id="open-eyes" className="study">
+            <circle cx="85" cy="90" r="8" fill="#ffffff" />
+            <circle cx="115" cy="90" r="8" fill="#ffffff" />
+          </g>
+          
+          <g id="closed-eyes" className="sleep">
+            <path d="M75 90 Q85 95 95 90" stroke="#ffffff" strokeWidth="3" fill="none" />
+            <path d="M105 90 Q115 95 125 90" stroke="#ffffff" strokeWidth="3" fill="none" />
+          </g>
+          
+          <path id="mouth" d="M80 115 Q100 130 120 115" className="study sleep" stroke="#ffffff" strokeWidth="3" fill="none" />
+          <path id="smile" d="M80 115 Q100 140 120 115" className="completed" stroke="#ffffff" strokeWidth="3" fill="none" />
+          
+          <g id="glasses" className="study">
+            <path d="M70 90 Q85 85 100 90 Q115 95 130 90" stroke="#333" strokeWidth="2" fill="none" />
+            <circle cx="85" cy="90" r="12" stroke="#333" strokeWidth="2" fill="none" />
+            <circle cx="115" cy="90" r="12" stroke="#333" strokeWidth="2" fill="none" />
+          </g>
+  
+          <g id="sunglasses" className="completed">
+            <path d="M70 90 Q100 80 130 90" stroke="#333" strokeWidth="3" fill="none" />
+            <rect x="75" y="80" width="20" height="18" rx="5" fill="#333" />
+            <rect x="105" y="80" width="20" height="18" rx="5" fill="#333" />
+          </g>
+  
+          <g id="hat" className="completed">
+            <path d="M65 60 Q100 25 135 60" fill="#4CAF50" stroke="#388E3C" strokeWidth="2" />
+            <path id="hat-brim" d="M55 60 H145" fill="#388E3C" stroke="#2E7D32" strokeWidth="2" />
+          </g>
+        </g>
+  
+        <g id="study-elements" className="study">
+          <rect id="book" x="60" y="150" width="80" height="15" fill="#4a4a4a" />
+        </g>
+  
+        <g id="sleep-elements" className="sleep">
+          <text id="z" x="140" y="60" fontSize="24" fontWeight="bold" fill="#4a4a4a">Z</text>
+          <text id="z" x="160" y="40" fontSize="24" fontWeight="bold" fill="#4a4a4a">Z</text>
+        </g>
+      </svg>
+    </div>
+  ), [timerStatus]);
 
   return (
     <div className="pomodoro-container">
@@ -357,28 +435,11 @@ const AdvancedPomodoroTimer = () => {
       {error && <div className="error-message">{error}</div>}
       {showSetup ? (
         <PomodoroSetup onSetupComplete={handleSetupComplete} />
+      ) : isAllCompleted ? (
+        renderCompletionScreen()
       ) : (
         <>
-          <div className="pomodoro-animation">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-            <g id="pomodoro-group">
-              <circle id="pomodoro" cx="100" cy="100" r="80" />
-              <circle id="eyes" cx="80" cy="90" r="10" />
-              <circle id="eyes" cx="120" cy="90" r="10" />
-              <path id="mouth" d="M70 120 Q100 150 130 120" className="study sleep" />
-              <path id="smile" d="M70 120 Q100 150 130 120" className="completed hidden" />
-            </g>
-            
-            <g id="study-elements" className="study">
-              <rect id="book" x="50" y="160" width="100" height="20" />
-            </g>
-            
-            <g id="sleep-elements" className="sleep hidden">
-              <text id="z" x="150" y="50">Z</text>
-              <text id="z" x="170" y="30">Z</text>
-            </g>
-          </svg>
-          </div>
+          {renderPomodoroSVG()}
           <div className="timer-display">{timerDisplay}</div>
           <div className="timer-status">{timerStatus}</div>
           <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>

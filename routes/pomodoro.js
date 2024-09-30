@@ -133,6 +133,7 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
           case 'completed':
             session.completed = true;
             session.endTime = now;
+            if (!session.intervalTime) session.intervalTime = now;
             debugLog('Session completed at:', now);
             await updatePomodoroEvent(session, now);
             break;
@@ -206,9 +207,12 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
           await updatePomodoroEvent(specificLastSession, date);
           debugLog('Creazione della prossima sessione');
           specificLastSession = await createNextSession(specificLastSession, date);
-          if (specificLastSession) {
-            await createPomodoroEvent(specificLastSession);
+          if (specificLastSession) await createPomodoroEvent(specificLastSession);
+          else {        
+          debugLog('Tutti i cicli sono stati completati, nessuna nuova sessione creata');
+          return res.status(200).json({ status: 'completed', message: 'Tutti i cicli sono stati completati, nessuna nuova sessione creata' });
           }
+          
           debugLog('Nuova sessione creata:', JSON.stringify(specificLastSession, null, 2));
         }
       }
@@ -228,7 +232,8 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
 
 async function completeSession(session, date) {
   debugLog('Entering completeSession', { sessionId: session._id, date });
-  
+
+  session.checked = true;
   session.completed = true;
   session.intervalTime = new Date(session.startTime.getTime() + session.durationMinutes * 60000);
   session.endTime = new Date(session.startTime.getTime() + (session.durationMinutes + session.maxPausedDuration) * 60000);
@@ -239,7 +244,8 @@ async function completeSession(session, date) {
     endTime: session.endTime,
     startTime: session.startTime,
     durationMinutes: session.durationMinutes,
-    maxPausedDuration: session.maxPausedDuration
+    maxPausedDuration: session.maxPausedDuration,
+    checked: session.checked
   });
 
   try {

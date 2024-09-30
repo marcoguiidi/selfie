@@ -1,103 +1,171 @@
 .pomodoro-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9;
-    text-align: center;
-  }
-  
-  h1 {
-    font-family: 'Arial', sans-serif;
-    color: #333;
-  }
-  
-  label {
-    display: block;
-    margin: 10px 0;
-  }
-  
-  input {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+  text-align: center;
+}
 
-  select {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  button {
-    padding: 10px 15px;
-    margin: 10px 5px;
-    border: none;
-    border-radius: 4px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  #timer-display {
-    font-size: 2rem;
-    margin: 20px 0;
-    animation: pulse 1s infinite;
-  }
-  
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-  }
-  
-  .hidden{
-    display: none;
-  }
-  
-  .pomodoro-animation {
-    width: 200px;
-    height: 200px;
-    margin: 20px auto;
-  }
-  
-  .pomodoro-animation svg {
-    width: 100%;
-    height: 100%;
-  }
+h1 {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
 
-  @keyframes study {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(5deg); }
-    75% { transform: rotate(-5deg); }
-  }
-  
-  @keyframes sleep {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(0, -5px); }
-  }
-  
-  @keyframes completed {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-  }
-  
-  #pomodoro { fill: #ff6347; }
-  #eyes { fill: #ffffff; }
-  #mouth { fill: none; stroke: #ffffff; stroke-width: 2; }
-  #book { fill: #4a4a4a; }
-  #z { font: bold 24px sans-serif; fill: #4a4a4a; }
-  .hidden { display: none; }
-  .study { animation: study 2s ease-in-out infinite; }
-  .sleep { animation: sleep 2s ease-in-out infinite; }
-  .completed { animation: completed 1s ease-in-out infinite; }
+label {
+  display: block;
+  margin: 10px 0;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 15px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#timer-display {
+  font-size: 2rem;
+  margin: 20px 0;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.hidden {
+  display: none;
+}
+
+.pomodoro-animation {
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+}
+
+.pomodoro-animation svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes study {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+@keyframes sleep {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0, -5px); }
+}
+
+@keyframes completed {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+#pomodoro { fill: #ff6347; }
+#eyes { fill: #ffffff; }
+#mouth { fill: none; stroke: #ffffff; stroke-width: 2; }
+#book { fill: #4a4a4a; }
+#z { font: bold 24px sans-serif; fill: #4a4a4a; }
+
+.study { animation: study 2s ease-in-out infinite; }
+.sleep { animation: sleep 2s ease-in-out infinite; }
+.completed { animation: completed 1s ease-in-out infinite; }
+
+#glasses {
+  stroke: #333;
+  stroke-width: 2;
+}
+
+#glasses circle {
+  fill: rgba(255, 255, 255, 0.1); 
+}
+
+#closed-eyes, #open-eyes, #smile, #completed-elements {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.study #open-eyes,
+.sleep #closed-eyes,
+.completed #smile,
+.completed #completed-elements {
+  opacity: 1;
+}
+
+#completed-elements circle {
+  mix-blend-mode: screen;
+}
+
+.completion-screen {
+  text-align: center;
+  padding: 20px;
+}
+
+.completion-screen h2 {
+  color: #4CAF50;
+  font-size: 24px;
+}
+
+.completion-screen p {
+  font-size: 18px;
+  margin: 20px 0;
+}
+
+.completion-screen button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.completion-screen button:hover {
+  background-color: #45a049;
+}
+
+#sunglasses, #hat {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.completed #sunglasses,
+.completed #hat {
+  opacity: 1;
+}
+
+#hat {
+  fill: #4CAF50;
+  stroke: #388E3C;
+  stroke-width: 2;
+}
+
+#hat-brim {
+  fill: #388E3C;
+  stroke: #2E7D32;
+  stroke-width: 2;
+}
