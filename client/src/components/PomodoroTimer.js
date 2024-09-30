@@ -274,12 +274,14 @@ const AdvancedPomodoroTimer = () => {
       svg.querySelectorAll('.study, .sleep, .completed').forEach(el => {
         el.classList.add('hidden');
       });
-      svg.querySelectorAll(`.${pomodoroState}`).forEach(el => {
-        el.classList.remove('hidden');
-      });
-      const pomodoroGroup = svg.querySelector('#pomodoro-group');
-      if (pomodoroGroup) {
-        pomodoroGroup.setAttribute('class', pomodoroState);
+      if (pomodoroState) {
+        svg.querySelectorAll(`.${pomodoroState}`).forEach(el => {
+          el.classList.remove('hidden');
+        });
+        const pomodoroGroup = svg.querySelector('#pomodoro-group');
+        if (pomodoroGroup) {
+          pomodoroGroup.setAttribute('class', pomodoroState);
+        }
       }
     }
   }, [timerStatus]);
@@ -292,7 +294,7 @@ const AdvancedPomodoroTimer = () => {
       resumeSession();
     }
   };
-
+  
   const handleSetDate = (newDate) => {
     debugLog('handleSetDate called with:', newDate);
     setCurrentDate(newDate);
@@ -301,7 +303,7 @@ const AdvancedPomodoroTimer = () => {
     setTimeMachineStartTime(Date.now());
     fetchSessionData(newDate, true);
   };
-
+  
   const handleResetDate = () => {
     debugLog('handleResetDate called');
     const now = new Date();
