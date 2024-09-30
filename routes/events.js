@@ -21,7 +21,7 @@ router.get('/', authenticateJWT, async (req, res) => {
 
 
       const updatedEvents = await Promise.all(events.map(async (event) => {
-          if (event.isDeadline) {
+          if (!event.title.startsWith('Pomodoro Session') && event.color !== '#FF6347' && event.isDeadline) {
             if (event.end < now){
               if (event.status == 'expired' || event.status == 'active'){
                 event.start = now;

@@ -72,7 +72,7 @@ router.post('/start', authenticateJWT, async (req, res) => {
       isDeadline: true,
       description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.breakMinutes} minutes break`,
       createdBy: req.user.id,
-      invited: null, 
+      invited: '', 
       color: '#FF6347', // Tomato color for Pomodoro
       repetition: 'no-repetition',
       status: 'active'

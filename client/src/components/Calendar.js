@@ -123,7 +123,7 @@ const MyCalendar = () => {
         const eventEnd = new Date(event.end);
         const isExpired = event.status === 'expired';
         const isCompleted = event.status === 'completed';
-        const isPast = currentDate > eventEnd;
+        const isPast = currentDate > eventEnd && !event.isDeadline;
         
         let backgroundColor = event.color || '#007bff';
         if (isCompleted) {
