@@ -31,9 +31,11 @@ router.get('/', authenticateJWT, async (req, res) => {
                   event.start = endDate;
                   event.end = endDate;
                 }
-                await event.save();
               }
+            } else if (event.status !== 'active' && event.status !== 'completed'){
+              event.status = 'active';
             }
+            await event.save();
           }
           return event;
       }));

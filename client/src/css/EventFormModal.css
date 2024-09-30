@@ -1,5 +1,5 @@
-.modal-overlay {
-    background: rgba(0, 0, 0, 0.5); /* Sfondo scuro semi-trasparente */
+.event-modal-overlay {
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,39 +8,61 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1000; /* Assicurati che la modale sia sopra tutti gli altri contenuti */
-    overflow: hidden; /* Evita lo scorrimento */
+    z-index: 1000;
+    overflow: hidden;
 }
 
-.modal-content {
-    max-width: 600px; /* Larghezza massima della modale */
-    width: 90%; /* Larghezza della modale in percentuale */
-    height: auto; /* Altezza automatica per adattarsi al contenuto */
-    max-height: 90vh; /* Limita l'altezza massima per stare all'interno della finestra */
+.event-modal-content {
+    width: 80vw; /* Occupare l'80% della larghezza dello schermo su desktop */
+    height: 85vh; /* Occupare l'85% dell'altezza dello schermo */
     background: white;
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 10px;
+    padding: 40px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 1001; /* Assicurati che il contenuto della modale sia sopra l'overlay */
-    overflow-y: auto; /* Abilita lo scorrimento verticale se necessario */
+    max-height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
-form div {
-    margin-bottom: 15px;
+.event-modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.event-modal-form-group {
+    margin-bottom: 20px;
+}
+
+.event-modal-form-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 label {
-    display: block;
     font-weight: bold;
-    margin-bottom: 5px;
 }
 
-input, textarea {
+input, textarea, select {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border-radius: 4px;
     border: 1px solid #ddd;
+    font-size: 16px;
+}
+
+textarea {
+    resize: vertical;
 }
 
 button {
@@ -51,68 +73,37 @@ button {
     font-size: 16px;
 }
 
-button.save {
+.event-modal-save {
     background-color: #007bff;
     color: white;
 }
 
-button.save:hover {
+.event-modal-save:hover {
     background-color: #0056b3;
 }
 
-button.cancel {
+.event-modal-cancel {
     background-color: #6c757d;
     color: white;
 }
 
-button.cancel:hover {
+.event-modal-cancel:hover {
     background-color: #5a6268;
 }
 
-.modal-buttons {
+.event-modal-buttons {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
 }
 
-/* .color-picker {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.color-option {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-}
-
-.color-option.selected {
-    border: 2px solid black;
-} */
-
-.deadline-button {
-    background-color: #f0f0f0; /* Default background */
-    color: #333; /* Default text color */
-    border: 1px solid #ccc; /* Border color */
-    border-radius: 5px;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s, transform 0.3s;
-    transform: translateY(0); /* Default position */
-}
-
-.deadline-button.active {
-    transform: translateY(-2px); /* Slide up */
-    background-color: #0056b3;
-}
-
-.deadline-button:hover {
-    background-color: #e0e0e0; /* Hover effect when inactive */
-}
-
-.deadline-button.active:hover {
-    background-color: #0056b3; /* Hover effect when active */
+@media (max-width: 800px) {
+    .event-modal-content {
+        width: 95vw; /* Occupare quasi tutta la larghezza su dispositivi mobili */
+        height: 95vh; /* Occupare quasi tutta l'altezza su dispositivi mobili */
+        padding: 20px;
+    }
+    .event-modal-form-row {
+        flex-direction: column;
+    }
 }

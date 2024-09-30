@@ -29,17 +29,9 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
       setEndRepetition(moment(event.endRepetition).format('YYYY-MM-DD'));
     } else {
       const startTime = initialStart ? moment(initialStart) : moment();
-      setStart(startTime.format('YYYY-MM-DDTHH:mm'));  
+      setStart(startTime.format('YYYY-MM-DDTHH:mm'));
 
-      // Calculate end time considering AM/PM transitions
       let endTime = startTime.clone().add(1, 'hour');
-      if (startTime.format('A') === 'AM' && endTime.format('A') === 'PM') {
-        // Transition from AM to PM
-        endTime = startTime.clone().hour(12).minute(0); // Set to 12:00 PM
-      } else if (startTime.format('A') === 'PM' && endTime.format('A') === 'AM') {
-        // Transition from PM to next day AM
-        endTime = startTime.clone().add(1, 'day').hour(0).minute(0); // Set to 12:00 AM next day
-      }
       setEnd(endTime.format('YYYY-MM-DDTHH:mm'));
 
       setTitle('');
@@ -63,73 +55,69 @@ const EventFormModal = ({ isOpen, onRequestClose, onSave, event, initialStart })
       invited: invited.split(',').map(email => email.trim()),
       color, 
       repetition,
-      endRepetition: repetition === 'no-repetition'? null : new Date(endRepetition)
+      endRepetition: repetition === 'no-repetition' ? null : new Date(endRepetition)
     };
     onSave(eventData);
     onRequestClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add/Edit Event" className="modal-content" overlayClassName="modal-overlay">
-      <h2>{event ? 'Edit Event' : 'Add Event'}</h2>
+    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add/Edit Event" className="event-modal-content" overlayClassName="event-modal-overlay">
+      <h2 className="event-modal-title">{event ? 'Edit Event' : 'Add Event'}</h2>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="event-modal-form-group">
           <label>Title:</label>
           <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center' }}>
-            <button
-              type="button"
-              onClick={() => setIsDeadline(!isDeadline)}
-              className={`deadline-button ${isDeadline ? 'active' : ''}`}
-              style={{ marginRight: '8px' }} // Space between button and label
-            >
-              {isDeadline ? 'Deadline On' : 'Deadline Off'}
-            </button>
-          </label>
-        </div>
-        <div>
-          <label>{isDeadline ? 'Deadline:' : 'Start Date:'}</label>
-          <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
-        </div>
-        {!isDeadline && (
-          <div>
-            <label>End Date:</label>
-            <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required />
+        <div className="event-modal-form-row">
+          <div className="event-modal-form-group inline">
+            <label>Deadline:</label>
+            <input type="checkbox" checked={isDeadline} onChange={() => setIsDeadline(!isDeadline)} />
           </div>
-        )}
-        <div>
-        <div>
+          <div className="event-modal-form-group inline">
+            <label>{isDeadline ? 'Deadline date:' : 'Start date:'}</label>
+            <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
+          </div>
+          {!isDeadline && (
+            <div className="event-modal-form-group inline">
+              <label>End date:</label>
+              <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required />
+            </div>
+          )}
+        </div>
+        <div className="event-modal-form-group">
           <label>Repetition:</label>
           <select value={repetition} onChange={(e) => setRepetition(e.target.value)}>
-            <option value="no-repetition">No Repetition</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
+            <option value="no-repetition">no repetition</option>
+            <option value="daily">daily</option>
+            <option value="weekly">weekly</option>
+            <option value="monthly">monthly</option>
+            <option value="yearly">yearly</option>
           </select>
           {repetition !== 'no-repetition' && (
-            <div>
+            <div className="event-modal-form-group inline">
               <label>End Repetition:</label>
               <input type="date" value={endRepetition} onChange={(e) => setEndRepetition(e.target.value)} />
             </div>
           )}
         </div>
+        <div className="event-modal-form-group">
           <label>Description:</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div>
-          <label>Invited (comma-separated emails):</label>
+        <div className="event-modal-form-group">
+          <label>Invited (comma-separated mail):</label>
           <input type="text" value={invited} onChange={(e) => setInvited(e.target.value)} />
         </div>
-        <div>
-          <label>Color:</label>
-          <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
+        <div className="event-modal-form-row">
+          <div className="event-modal-form-group">
+            <label>Color:</label>
+            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
+          </div>
         </div>
-        <div className="modal-buttons">
-          <button type="submit" className="save">Save</button>
-          <button type="button" className="cancel" onClick={onRequestClose}>Cancel</button>
+        <div className="event-modal-buttons">
+          <button type="submit" className="event-modal-save">SaSavelva</button>
+          <button type="button" className="event-modal-cancel" onClick={onRequestClose}>Cancel</button>
         </div>
       </form>
     </Modal>
