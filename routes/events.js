@@ -23,10 +23,14 @@ router.get('/', authenticateJWT, async (req, res) => {
       const updatedEvents = await Promise.all(events.map(async (event) => {
           if (!event.title.startsWith('Pomodoro Session') && event.color !== '#FF6347' && event.isDeadline) {
             if (event.end < now){
+              const endDate = new Date(event.end);
               if (event.status == 'expired' || event.status == 'active'){
-                event.start = now;
-                event.end = now;
                 event.status = 'expired';
+                if (endDate.getDate() < now.getDate()){
+                  endDate.setDate(now.getDate());
+                  event.start = endDate;
+                  event.end = endDate;
+                }
                 await event.save();
               }
             }
