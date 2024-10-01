@@ -21,9 +21,9 @@ const MyCalendar = () => {
     const [timeMachineOpen, setTimeMachineOpen] = useState(false); 
     const [currentUser, setCurrentUser] = useState(null); 
     const [initialStart, setInitialStart] = useState(null);
-    
 
     const fetchEvents = async (selectedDate) => {
+        console.log('Fetching events for date:', selectedDate);
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.get('/api/events', {
@@ -41,13 +41,14 @@ const MyCalendar = () => {
                 end: new Date(event.end)
             }));
             setEvents(events);
+            console.log('Fetched events:', events);
         } catch (err) {
             console.error('Error fetching events:', err.response ? err.response.data : err.message);
         }
     };
-    
 
     const fetchCurrentUser = async () => {
+        console.log('Fetching current user');
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.get('/api/users/me', {
@@ -57,7 +58,7 @@ const MyCalendar = () => {
             });
 
             setCurrentUser(response.data.email); 
-
+            console.log('Fetched current user:', response.data.email);
         } catch (err) {
             console.error('Error fetching current user:', err.response ? err.response.data : err.message);
         }
@@ -69,54 +70,58 @@ const MyCalendar = () => {
     }, []);
 
     const handleSelectView = (view) => {
+        console.log('Selected view:', view);
         setView(view);
     };
 
     const handleSelectSlot = (slotInfo) => {
+        console.log('Selected slot:', slotInfo);
         setSelectedEvent(null);
         setInitialStart(moment(slotInfo.start).toDate());
         setModalOpen(true);
-      };
+    };
     
-      const handleCloseModal = () => {
+    const handleCloseModal = () => {
+        console.log('Closing modal');
         setModalOpen(false);
         setInitialStart(null);
         setSelectedEvent(null);
-      };
+    };
 
     const handleSaveEvent = async (event) => {
+        console.log('Saving event:', event);
         try {
-          const token = localStorage.getItem('authToken');
-          const eventData = {
-            title: event.title,
-            start: event.start,
-            end: event.isDeadline ? event.start : event.end,
-            isDeadline: event.isDeadline,
-            description: event.description,
-            invited: event.invited,
-            color: event.color,
-            repetition: event.repetition,
-            endRepetition: event.endRepetition
-          };
+            const token = localStorage.getItem('authToken');
+            const eventData = {
+                title: event.title,
+                start: event.start,
+                end: event.isDeadline ? event.start : event.end,
+                isDeadline: event.isDeadline,
+                description: event.description,
+                invited: event.invited,
+                color: event.color,
+                repetition: event.repetition,
+                endRepetition: event.endRepetition
+            };
     
-          if (selectedEvent && selectedEvent._id) {
-            const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-          } else {
-            const response = await axios.post('/api/events', eventData, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-          }
+            if (selectedEvent && selectedEvent._id) {
+                const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                console.log('Updated event:', response.data);
+            } else {
+                const response = await axios.post('/api/events', eventData, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                console.log('Created event:', response.data);
+            }
           
-          fetchEvents();
-          handleCloseModal();
+            fetchEvents();
+            handleCloseModal();
         } catch (err) {
-          console.error('Error saving event:', err.response ? err.response.data : err.message);
+            console.error('Error saving event:', err.response ? err.response.data : err.message);
         }
-      };
+    };
 
     const eventStyleGetter = (event) => {
         const eventStart = new Date(event.start);
@@ -151,13 +156,14 @@ const MyCalendar = () => {
     };
 
     const handleSelectEvent = (event) => {
+        console.log('Selected event:', event);
         setSelectedEvent(event);
         setDetailModalOpen(true);
     };
 
     const handleEditEvent = (event) => {
+        console.log('Editing event:', event);
         setSelectedEvent(event);
-        console.log('edit', event);
         setModalOpen(true);
         setDetailModalOpen(false);
     };
@@ -165,6 +171,7 @@ const MyCalendar = () => {
     const handleDeleteEvent = async (eventId) => {
         const confirmDelete = window.confirm('Would you like to delete this event?');
         if (confirmDelete) {
+            console.log('Deleting event:', eventId);
             try {
                 const token = localStorage.getItem('authToken');
                 await axios.delete(`/api/events/${eventId}`, {
@@ -182,6 +189,7 @@ const MyCalendar = () => {
     };
 
     const handleDeclineEvent = async (eventId) => {
+        console.log('Declining event:', eventId);
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.post(`/api/events/${eventId}/decline`, {}, {
@@ -191,7 +199,6 @@ const MyCalendar = () => {
             });
     
             if (response.status === 200) {
-
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event._id === eventId ? { 
@@ -209,6 +216,7 @@ const MyCalendar = () => {
     };
 
     const handleCompleteEvent = async (eventId) => {
+        console.log('Completing event:', eventId);
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.post(`/api/events/${eventId}/complete`, {}, {
@@ -223,80 +231,114 @@ const MyCalendar = () => {
             console.error('Error completing event:', error.response ? error.response.data : error.message);
         }
     };
-    
 
     const openTimeMachine = () => {
+        console.log('Opening Time Machine');
         setTimeMachineOpen(true);
     };
-    
+
     const handleSetDate = (newDate) => {
+        console.log('Setting new date:', newDate);
         setCurrentDate(newDate);
         setDate(newDate);
         setTimeMachineOpen(false);
         fetchEvents(newDate); 
     };
-    
 
     const resetToCurrentDate = () => {
+        console.log('Resetting to current date');
         const now = new Date();
         setCurrentDate(now);
         setDate(now);
         fetchEvents();
         setTimeMachineOpen(false);
     };
-    
-    
 
     return (
         <div className="page-content">
-          <button onClick={openTimeMachine}>Open Time Machine</button>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            selectable
-            views={['month', 'week', 'day', 'agenda']}
-            view={view}
-            onView={handleSelectView}
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            style={{ height: 500 }}
-            eventPropGetter={eventStyleGetter}
-            date={date}
-            onNavigate={(newDate, view, action) => {
-              if (action === 'TODAY') {
-                setDate(currentDate);
-              } else {
-                setDate(newDate);
-              }
-            }}
-          />
-    <EventFormModal
-        isOpen={modalOpen}
-        onRequestClose={handleCloseModal}
-        onSave={handleSaveEvent}
-        event={selectedEvent}
-        initialStart={initialStart}
-      />
-          <EventDetailModal
-            isOpen={detailModalOpen}
-            onRequestClose={() => setDetailModalOpen(false)}
-            event={selectedEvent}
-            onEdit={handleEditEvent}
-            onComplete={handleCompleteEvent}
-            onDelete={handleDeleteEvent}
-            currentUser={currentUser}
-            onDecline={handleDeclineEvent}
-          />
-          <TimeMachineModal
-            isOpen={timeMachineOpen}
-            onRequestClose={() => setTimeMachineOpen(false)}
-            onSetDate={handleSetDate}
-            onResetDate={resetToCurrentDate}
-          />
+            <button onClick={openTimeMachine}>Open Time Machine</button>
+            <Calendar
+                key={date.toISOString()} // Use toISOString() for a more precise key
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                selectable
+                views={['month', 'week', 'day', 'agenda']}
+                view={view}
+                onView={handleSelectView}
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                style={{ height: 500 }}
+                eventPropGetter={eventStyleGetter}
+                date={date}
+                onNavigate={(newDate, view, action) => {
+                    console.log('Navigating to date:', newDate, 'Action:', action);
+                    if (action === 'TODAY') {
+                        setDate(currentDate);
+                    } else {
+                        setDate(newDate);
+                    }
+                }}
+                components={{
+                    toolbar: (toolbarProps) => (
+                        <CustomToolbar
+                            {...toolbarProps}
+                            currentDate={currentDate}
+                        />
+                    ),
+                }}
+            />
+            <EventFormModal
+                isOpen={modalOpen}
+                onRequestClose={handleCloseModal}
+                onSave={handleSaveEvent}
+                event={selectedEvent}
+                initialStart={initialStart}
+            />
+            <EventDetailModal
+                isOpen={detailModalOpen}
+                onRequestClose={() => setDetailModalOpen(false)}
+                event={selectedEvent}
+                onEdit={handleEditEvent}
+                onComplete={handleCompleteEvent}
+                onDelete={handleDeleteEvent}
+                currentUser={currentUser}
+                onDecline={handleDeclineEvent}
+            />
+            <TimeMachineModal
+                isOpen={timeMachineOpen}
+                onRequestClose={() => setTimeMachineOpen(false)}
+                onSetDate={handleSetDate}
+                onResetDate={resetToCurrentDate}
+            />
         </div>
-      );
+    );
+};
+
+// Custom Toolbar component
+const CustomToolbar = (props) => {
+    const { label, onNavigate, onView, currentDate } = props;
+
+    return (
+        <div className="rbc-toolbar">
+            <span className="rbc-btn-group">
+                <button type="button" onClick={() => onNavigate('PREV')}>Back</button>
+                <button type="button" onClick={() => onNavigate('TODAY')}>
+                    {moment(currentDate).format('MMM D, YYYY')}
+                </button>
+                <button type="button" onClick={() => onNavigate('NEXT')}>Next</button>
+            </span>
+            <span className="rbc-toolbar-label">{label}</span>
+            <span className="rbc-btn-group">
+                {['month', 'week', 'day', 'agenda'].map(value => (
+                    <button key={value} type="button" onClick={() => onView(value)}>
+                        {value}
+                    </button>
+                ))}
+            </span>
+        </div>
+    );
 };
 
 export default MyCalendar;
