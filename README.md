@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+## Membri e contributi
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Marco Guidi
 
-## Available Scripts
+- Email: marco.guidi24@studio.unibo.it
 
-In the project directory, you can run:
+### Fabio Chiarini
 
-### `npm start`
+- Email: fabio.chiarini2@studio.unibo.it
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Entrambi i membri hanno partecipato attivamente allo sviluppo del progetto, lavorando in sessioni di Pair Programming. In particolare:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+#### [ENTRAMBI I MEMBRI]
 
-### `npm test`
+- Project setup and architecture
+- Sviluppo Back-End (Node.js, Express, MongoDB)
+- Sviluppo Front-End (React)
+- Time Machine feature
+- Contributi alle altre funzionalità del progetto
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### [Marco Guidi]
 
-### `npm run build`
+- Principale focus sullo sviluppo della funzionalità del Calendario
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### [Fabio Chiarini]
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Principale focus sullo sviluppo della funzionalità del Pomodoro Timer
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Funzionalità implementate
 
-### `npm run eject`
+L'applicazione è stata sviluppata utilizzando un'architettura client-server composta da un frontend in React e un backend basato su Node.js/Express, con il supporto di un database MongoDB per la persistenza dei dati. Il progetto offre una serie di funzionalità per la gestione degli eventi, la creazione e visualizzazione di note, e l'uso di un timer Pomodoro per ottimizzare la produttività. L'interfaccia è stata progettata per essere responsiva, adattandosi perfettamente sia a desktop che a dispositivi mobili.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+#### Autenticazione Utente
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Registrazione e Login**: Gli utenti possono registrarsi fornendo nome utente, email, password, nome reale e data di nascita. Il sistema implementa un'autenticazione sicura per l'accesso.
+- **Evento di Compleanno**: Al momento della registrazione, viene creato automaticamente un evento di compleanno per l'utente, che verrà visualizzato nel calendario.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Home Page
+La home page mostra una preview delle principali sezioni dell'applicazione:
+* **Eventi della settimana o del giorno corrente.**
+* **Ultima nota creata.**
+* **Report dell'ultimo ciclo di Pomodoro completato.**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+#### Calendario
+Il calendario è una delle componenti centrali dell'applicazione, offrendo diverse funzionalità avanzate:
 
-## Learn More
+- **Gestione Eventi**: Creazione, modifica e cancellazione di eventi.
+- **Eventi Ricorrenti**: Possibilità di impostare eventi singoli o ricorrenti su base giornaliera, settimanale, mensile o annuale.
+- **Visualizzazioni Multiple**: Gli eventi possono essere visualizzati in modalità giornaliera, settimanale o mensile.
+- **Deadline**: Gli eventi possono essere contrassegnati come "deadline" (isDeadline), gestendo attività con scadenze.
+- **Personalizzazione**: Gli eventi possono essere personalizzati nei colori e nello stato (attivo, scaduto o completato).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- **Completamento Deadline**: È possibile completare un evento con scadenza una volta raggiunto l'obiettivo.
+- **Lista Attività**: Gli eventi sono organizzabili anche in una lista separata di attività.
+- **Modifica degli Eventi**: Gli eventi possono essere modificati in ogni loro parte dopo la creazione.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Note
 
-### Code Splitting
+La sezione note consente la gestione di appunti personali:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **Creazione, Modifica e Cancellazione**: Gli utenti possono creare note con titolo, contenuto e categorie.
+- **Ordinamento**: Le note possono essere ordinate per data di creazione, ultima modifica o categoria.
+- **Markdown**: È supportato il Markdown per la formattazione del testo nelle note (Estensione 18-24).
+- **Visualizzazione Dettagliata**: Le note possono essere visualizzate in dettaglio con il rendering del Markdown.
+- **Categorie Personalizzabili**: Gli utenti possono personalizzare le categorie oltre a quelle predefinite ("Unibo" e "Altro"), create automaticamente al momento della registrazione.
 
-### Analyzing the Bundle Size
+#### Timer Pomodoro
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Il timer Pomodoro consente la gestione dei cicli di studio e pausa:
 
-### Making a Progressive Web App
+- **Impostazioni Personalizzabili**: È possibile personalizzare i tempi di studio, pausa breve e pausa lunga.
+- **Cicli Configurabili**: Gli utenti possono configurare il numero di cicli di studio e pause lunghe.
+- **Pause e Riprese**: Il timer può essere messo in pausa, ripreso o interrotto in qualsiasi momento.
+- **Animazioni CSS**: Durante le fasi di studio e pausa vengono visualizzate animazioni CSS.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+#### Time Machine
 
-### Advanced Configuration
+La funzionalità Time Machine permette agli utenti di esplorare eventi passati e futuri:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **Navigazione Temporale**: Si può scorrere avanti o indietro nel tempo per visualizzare eventi di altri giorni o settimane.
+- **Sincronizzazione con Pomodoro**: La Time Machine è sincronizzata con il timer Pomodoro, permettendo di visualizzare eventi passati o futuri legati ai cicli Pomodoro.
 
-### Deployment
+#### Interfaccia e Responsività
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+L'applicazione è progettata per essere completamente responsiva, adattandosi sia a schermi desktop che a dispositivi mobili. L'interfaccia è moderna e intuitiva, offrendo un'esperienza utente fluida.
 
-### `npm run build` fails to minify
+#### Funzionalità Estese
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+L'applicazione include diverse funzionalità avanzate, legate a estensioni specifiche del progetto:
+
+- **Supporto Markdown nelle Note** (Estensione 18-24).
+- **Eventi con Invitati**: Gli eventi possono includere invitati, con la possibilità per gli utenti di declinare un invito (parzialmente implementato, Estensione 18-27).
+- **Integrazione Timer Pomodoro**: Il timer Pomodoro è integrato con il calendario, creando automaticamente eventi relativi ai cicli di studio (Estensione 18-24).
+- **Cicli Pomodoro Non Completati**: I cicli non completati vengono automaticamente trasferiti ai giorni successivi (Estensione 18-24).
+
+#### Conclusioni
+
+L'applicazione sviluppata rappresenta una soluzione completa per la gestione di eventi, note e cicli di produttività Pomodoro. La sua architettura flessibile e le numerose funzionalità avanzate offrono agli utenti un'esperienza personalizzabile e integrata per la gestione del proprio tempo e delle proprie attività.
