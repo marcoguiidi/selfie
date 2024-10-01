@@ -117,7 +117,6 @@ router.post('/', authenticateJWT, async (req, res) => {
         await handleRepetedEvents(savedEvent);
       }
 
-      console.log('events.js saving', savedEvent);
       res.status(201).json(savedEvent);
     } catch (err) {
       console.error('Error creating event:', err);

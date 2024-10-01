@@ -23,7 +23,7 @@ const MyCalendar = () => {
     const [initialStart, setInitialStart] = useState(null);
 
     const fetchEvents = async (selectedDate) => {
-        console.log('Fetching events for date:', selectedDate);
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.get('/api/events', {
@@ -41,14 +41,14 @@ const MyCalendar = () => {
                 end: new Date(event.end)
             }));
             setEvents(events);
-            console.log('Fetched events:', events);
+
         } catch (err) {
             console.error('Error fetching events:', err.response ? err.response.data : err.message);
         }
     };
 
     const fetchCurrentUser = async () => {
-        console.log('Fetching current user');
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.get('/api/users/me', {
@@ -58,7 +58,7 @@ const MyCalendar = () => {
             });
 
             setCurrentUser(response.data.email); 
-            console.log('Fetched current user:', response.data.email);
+
         } catch (err) {
             console.error('Error fetching current user:', err.response ? err.response.data : err.message);
         }
@@ -70,26 +70,26 @@ const MyCalendar = () => {
     }, []);
 
     const handleSelectView = (view) => {
-        console.log('Selected view:', view);
+
         setView(view);
     };
 
     const handleSelectSlot = (slotInfo) => {
-        console.log('Selected slot:', slotInfo);
+
         setSelectedEvent(null);
         setInitialStart(moment(slotInfo.start).toDate());
         setModalOpen(true);
     };
     
     const handleCloseModal = () => {
-        console.log('Closing modal');
+
         setModalOpen(false);
         setInitialStart(null);
         setSelectedEvent(null);
     };
 
     const handleSaveEvent = async (event) => {
-        console.log('Saving event:', event);
+
         try {
             const token = localStorage.getItem('authToken');
             const eventData = {
@@ -108,12 +108,12 @@ const MyCalendar = () => {
                 const response = await axios.put(`/api/events/${selectedEvent._id}`, eventData, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Updated event:', response.data);
+
             } else {
                 const response = await axios.post('/api/events', eventData, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Created event:', response.data);
+
             }
           
             fetchEvents();
@@ -156,13 +156,13 @@ const MyCalendar = () => {
     };
 
     const handleSelectEvent = (event) => {
-        console.log('Selected event:', event);
+
         setSelectedEvent(event);
         setDetailModalOpen(true);
     };
 
     const handleEditEvent = (event) => {
-        console.log('Editing event:', event);
+
         setSelectedEvent(event);
         setModalOpen(true);
         setDetailModalOpen(false);
@@ -171,7 +171,7 @@ const MyCalendar = () => {
     const handleDeleteEvent = async (eventId) => {
         const confirmDelete = window.confirm('Would you like to delete this event?');
         if (confirmDelete) {
-            console.log('Deleting event:', eventId);
+
             try {
                 const token = localStorage.getItem('authToken');
                 await axios.delete(`/api/events/${eventId}`, {
@@ -189,7 +189,7 @@ const MyCalendar = () => {
     };
 
     const handleDeclineEvent = async (eventId) => {
-        console.log('Declining event:', eventId);
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.post(`/api/events/${eventId}/decline`, {}, {
@@ -216,7 +216,7 @@ const MyCalendar = () => {
     };
 
     const handleCompleteEvent = async (eventId) => {
-        console.log('Completing event:', eventId);
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await axios.post(`/api/events/${eventId}/complete`, {}, {
@@ -233,12 +233,12 @@ const MyCalendar = () => {
     };
 
     const openTimeMachine = () => {
-        console.log('Opening Time Machine');
+
         setTimeMachineOpen(true);
     };
 
     const handleSetDate = (newDate) => {
-        console.log('Setting new date:', newDate);
+
         setCurrentDate(newDate);
         setDate(newDate);
         setTimeMachineOpen(false);
@@ -246,7 +246,7 @@ const MyCalendar = () => {
     };
 
     const resetToCurrentDate = () => {
-        console.log('Resetting to current date');
+
         const now = new Date();
         setCurrentDate(now);
         setDate(now);
@@ -273,7 +273,6 @@ const MyCalendar = () => {
                 eventPropGetter={eventStyleGetter}
                 date={date}
                 onNavigate={(newDate, view, action) => {
-                    console.log('Navigating to date:', newDate, 'Action:', action);
                     if (action === 'TODAY') {
                         setDate(currentDate);
                     } else {

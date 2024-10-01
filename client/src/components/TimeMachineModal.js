@@ -47,7 +47,7 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
         throw new Error(errorText || 'Failed to delete cheated Pomodoro sessions');
       }
       onResetDate();
-      console.log('Cheated Pomodoro sessions deleted successfully');
+
     } catch (error) {
       console.error('Error deleting cheated Pomodoro sessions:', error);
     }
