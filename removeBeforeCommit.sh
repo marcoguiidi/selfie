@@ -3,7 +3,7 @@ echo "node_modules/ removed" && \
 
 cd client && \
 rm -rf build/ && \
-echo "cleint/build/ removed" && \
+echo "client/build/ removed" && \
 
 rm -rf node_modules/ && \
 echo "client/node_modules/ removed" && \

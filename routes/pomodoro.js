@@ -409,7 +409,7 @@ router.delete('/delete-cheated', authenticateJWT, async (req, res) => {
 
     if (cheatedSessions.length === 0) {
       debugLog('No cheated sessions found for user:', userId);
-      return res.status(404).json({ message: 'No cheated sessions found' });
+      return res.status(200).json({ message: 'No cheated sessions found' });
     }
 
 
