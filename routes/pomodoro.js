@@ -5,7 +5,7 @@ const Event = require('../models/Event');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
 const debugLog = (...messages) => {
-  console.log(new Date().toISOString(), ...messages);
+  if (process.env.NODE_ENV !== 'production') console.log(new Date().toISOString(), ...messages);
 };
 
 const getCurrentDate = (req) => {

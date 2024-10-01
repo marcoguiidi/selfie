@@ -34,7 +34,7 @@ const AdvancedPomodoroTimer = () => {
   }), []);
 
   const debugLog = useCallback((...messages) => {
-    console.log(new Date().toISOString(), ...messages);
+    if (process.env.NODE_ENV === 'development') console.log(new Date().toISOString(), ...messages);
   }, []);
 
   const updateTimerDisplay = useCallback((time) => {
