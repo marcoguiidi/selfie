@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateJWT = require('../middleware/authenticateJWT');
 const Category = require('../models/Category');
 
-// Ottieni le categorie
+
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const categories = await Category.find(
@@ -17,7 +17,7 @@ router.get('/', authenticateJWT, async (req, res) => {
   }
 });
 
-// Aggiungi categoria
+
 router.post('/', authenticateJWT, async (req, res) => {
   const { name } = req.body;
   try {
@@ -33,7 +33,7 @@ router.post('/', authenticateJWT, async (req, res) => {
   }
 });
 
-// Elimina categoria
+
 router.delete('/:id', authenticateJWT, async (req, res) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);

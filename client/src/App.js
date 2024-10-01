@@ -22,7 +22,7 @@ const App = () => {
       const token = localStorage.getItem('authToken');
       if (token) {
         try {
-          // Verifica il token con il backend
+
           await axios.get('/api/auth/verify', {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -38,7 +38,7 @@ const App = () => {
     verifyToken();
   }, []);
 
-  // Componente di routing protetto
+
   const ProtectedRoute = ({ element }) => {
     if (loading) {
       return <div>Loading...</div>;

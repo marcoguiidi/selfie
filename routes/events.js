@@ -5,13 +5,13 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
-// Ottieni gli eventi creati dall'utente o a cui è invitato
+
 router.get('/', authenticateJWT, async (req, res) => {
   try {
       const userEmail = req.user.email;
-      const now = req.query.currentDate ? new Date(req.query.currentDate) : new Date(); // Usa la data passata o la data attuale
+      const now = req.query.currentDate ? new Date(req.query.currentDate) : new Date(); 
 
-      // Trova eventi creati dall'utente o a cui è stato invitato
+
       let events = await Event.find({
           $or: [
               { createdBy: req.user.id },
@@ -49,21 +49,21 @@ router.get('/', authenticateJWT, async (req, res) => {
 
 router.get('/lastPomodoro', authenticateJWT, async (req, res) => {
   try {
-    // Trova l'evento che inizia con "pomodoro Session" e ha il colore '#FF6347'
+
     const pomodoro = await Event.findOne({
-      title: { $regex: '^Pomodoro Session', $options: 'i' }, // Usa regex per cercare all'inizio
+      title: { $regex: '^Pomodoro Session', $options: 'i' }, 
       color: '#FF6347',
       createdBy: req.user.id, 
     })
-      .sort({ end: -1 }) // Ordina per endDate in ordine decrescente
-      .exec(); // Esegui la query
+      .sort({ end: -1 }) 
+      .exec(); 
 
-    // Se non viene trovato nessun pomodoro, restituisci un messaggio appropriato
+
     if (!pomodoro) {
       return res.status(404).json({ message: 'Nessun pomodoro trovato' });
     }
 
-    // Restituisci l'evento trovato
+
     res.status(200).json(pomodoro);
   } catch (err) {
     console.error('Error fetching last pomodoro:', err);
@@ -74,11 +74,11 @@ router.get('/lastPomodoro', authenticateJWT, async (req, res) => {
 
 
 
-// Ottieni un singolo evento per ID
+
 router.get('/:id', authenticateJWT, async (req, res) => {
   try {
       const event = await Event.findById(req.params.id)
-          .populate('createdBy', 'email'); // Popola i dettagli del creatore se necessario
+          .populate('createdBy', 'email'); 
       
       if (!event) {
           return res.status(404).json({ message: 'Event not found' });
@@ -91,7 +91,7 @@ router.get('/:id', authenticateJWT, async (req, res) => {
   }
 });
 
-// Crea un nuovo evento
+
 router.post('/', authenticateJWT, async (req, res) => {
     const { title, start, end, isDeadline, description, invited, color, repetition, endRepetition } = req.body;
     try {
@@ -109,10 +109,10 @@ router.post('/', authenticateJWT, async (req, res) => {
         status: 'active'
       });
 
-      // Salva l'evento principale
+
       const savedEvent = await newEvent.save();
 
-      // Se c'è una ripetizione, gestisci la creazione degli eventi ripetuti
+
       if (repetition !== 'no-repetition') {
         await handleRepetedEvents(savedEvent);
       }
@@ -125,7 +125,7 @@ router.post('/', authenticateJWT, async (req, res) => {
     }
 });
 
-// Modifica un evento esistente
+
 router.put('/:id', authenticateJWT, async (req, res) => {
     try {
       const { title, start, end, isDeadline, description, invited, color, repetition, endRepetition } = req.body;
@@ -161,7 +161,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     }
 });
 
-// Elimina un evento e tutte le ripetizioni legate
+
 router.delete('/:id', authenticateJWT, async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -186,7 +186,7 @@ router.post('/:eventId/complete', authenticateJWT, async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Verifica se l'utente è il creatore dell'evento
+
         if (event.createdBy.toString()!== req.user.id) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
@@ -204,23 +204,23 @@ router.post('/:eventId/complete', authenticateJWT, async (req, res) => {
     }  
 });
 
-// Declina un invito a un evento
+
 router.post('/:eventId/decline', authenticateJWT, async (req, res) => {
     try {
         const { eventId } = req.params;
 
-        // Trova l'evento per ID
+
         const event = await Event.findById(eventId);
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Verifica se l'utente è invitato
+
         if (!event.invited.includes(req.user.email)) {
             return res.status(400).json({ message: 'User not invited to this event' });
         }
 
-        // Rimuovi l'utente dalla lista degli invitati
+
         event.invited = event.invited.filter(inviteId => inviteId.toString() !== req.user.email);
         
         await event.save();
@@ -232,22 +232,22 @@ router.post('/:eventId/decline', authenticateJWT, async (req, res) => {
     }
 });
 
-// Gestisci le ripetizioni degli eventi
+
 const handleRepetedEvents = async (event) => {
   const { repetition, endRepetition, start, end } = event;
   const repetitions = [];
 
 
   
-  // Definisci la data finale
+
   const endDate = new Date(endRepetition);
   let nextStart = new Date(start);
   let nextEnd = new Date(end);
   const originalDay = nextStart.getDate();
 
-  // Gestisci le ripetizioni
+
   while (nextStart < endDate) {
-      // Incrementa la data in base alla ripetizione
+
       switch (repetition) {
           case 'daily':
               nextStart.setDate(nextStart.getDate() + 1);
@@ -262,7 +262,7 @@ const handleRepetedEvents = async (event) => {
               const daysInMonth = getDaysInMonth(currentMonth + 1, nextStart.getFullYear());
         
               if(daysInMonth < originalDay){
-                // Se il mese successivo non ha abbastanza giorni, imposta l'ultimo giorno del mese
+
                   nextStart.setDate(daysInMonth);
                   nextEnd.setDate(daysInMonth);
                   nextStart.setMonth(currentMonth + 1);
@@ -283,7 +283,7 @@ const handleRepetedEvents = async (event) => {
       }
 
       if(nextStart <= endDate){
-        // Crea un nuovo evento per ogni ripetizione
+
         const newEvent = new Event({
           title: event.title,
           start: new Date(nextStart),
@@ -296,7 +296,7 @@ const handleRepetedEvents = async (event) => {
           repetition: repetition,
           endRepetition: endRepetition,
           status: 'active',
-          parentEvent: event._id // Collegamento all'evento originale
+          parentEvent: event._id 
         });
 
         repetitions.push(newEvent);
@@ -304,7 +304,7 @@ const handleRepetedEvents = async (event) => {
   }
 
   try {
-      // Salva tutte le ripetizioni nel database
+
       await Event.insertMany(repetitions);
   } catch (error) {
       console.error('Errore durante il salvataggio delle ripetizioni:', error);

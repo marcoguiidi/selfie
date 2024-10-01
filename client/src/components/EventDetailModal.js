@@ -3,14 +3,15 @@ import Modal from 'react-modal';
 import moment from 'moment';
 import axios from 'axios';
 import "../css/EventDetailModal.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPen, faTrash, faTimes, faCheck, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
-Modal.setAppElement('#root'); // Necessario per accessibilità
+Modal.setAppElement('#root'); 
 
 const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, onComplete, currentUser, onDecline }) => {
     const [parentEventDetails, setParentEventDetails] = useState(null);
 
     useEffect(() => {
-        // Recupera i dettagli dell'evento padre se esiste
         if (!event) return;
         const fetchParentEvent = async () => {
             if (event.parentEvent) {
@@ -32,7 +33,6 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, onC
         fetchParentEvent();
     }, [event]);
 
-
     if (!event) {
         return null; 
     }
@@ -40,15 +40,18 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, onC
     const isCreator = event.createdBy.email === currentUser;
 
     return (
-        <div className='page-content'>
+        <div className='event-modal-wrapper'>
             <Modal 
                 isOpen={isOpen} 
                 onRequestClose={onRequestClose} 
-                contentLabel="Event Details"
-                className="modal-content"
-                overlayClassName="modal-overlay"
+                contentLabel="Dettagli Evento"
+                className="event-detail-modal-content"
+                overlayClassName="event-detail-modal-overlay"
             >
-                <h2>Event Details</h2>
+                <button className="event-modal-btn-close" onClick={onRequestClose}>
+                    <FontAwesomeIcon icon={faTimes} />
+                </button>
+                <h2 className="event-modal-title">Event Details</h2>
                 <p><strong>Title:</strong> {event.title}</p>
                 { event.isDeadline ? (
                     <div>
@@ -56,29 +59,36 @@ const EventDetailModal = ({ isOpen, onRequestClose, event, onEdit, onDelete, onC
                     </div>
                 ) : (
                     <div>
-                        <p><strong>Start Date:</strong> {new Date(event.start).toLocaleString()}</p>
-                        <p><strong>End Date:</strong> {new Date(event.end).toLocaleString()}</p>
+                        <p><strong>Start:</strong> {new Date(event.start).toLocaleString()}</p>
+                        <p><strong>End:</strong> {new Date(event.end).toLocaleString()}</p>
                     </div>
                 )}
                 {event.description && event.description.trim() && <p><strong>Description:</strong> {event.description}</p>}
-                {event.invited && event.invited.length > 0 && event.invited[0] !== "" && <p><strong>Invited:</strong> {event.invited && event.invited.join(', ')}</p>}
-                <p><strong>Created by: </strong> {event.createdBy.email || 'Unknown'}</p>
+                {event.invited && event.invited.length > 0 && event.invited[0] !== "" && <p><strong>Invited:</strong> {event.invited.join(', ')}</p>}
+                <p><strong>Created By: </strong> {event.createdBy.email || 'unknown'}</p>
                 { event.parentEvent && parentEventDetails && (
                     <small>Repeated from {moment(parentEventDetails.start).format('YYYY-MM-DD')}</small>
                 )}
-                <div className="modal-buttons">
+                <div className="event-modal-btn">
                     {isCreator ? (
                         <>
-                            <button className="edit" onClick={() => onEdit(event)}>Edit</button>
-                            <button className="delete" onClick={() => onDelete(event._id)}>Delete</button>
+                            <button className="event-modal-btn-icon event-modal-btn-edit" onClick={() => onEdit(event)}>
+                                <FontAwesomeIcon icon={faPen} />
+                            </button>
+                            <button className="event-modal-btn-icon event-modal-btn-delete" onClick={() => onDelete(event._id)}>
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
                         </>
                     ) : (
-                        <button className="decline" onClick={() => onDecline(event._id)}>Decline</button>
+                        <button className="event-modal-btn-icon event-modal-btn-decline" onClick={() => onDecline(event._id)}>
+                            <FontAwesomeIcon icon={faTimesCircle} />
+                        </button>
                     )}
                     {event.isDeadline && event.status !== 'completed' && (
-                        <button className="complete" onClick={() => onComplete(event._id)}>Complete</button>
+                        <button className="event-modal-btn-icon event-modal-btn-complete" onClick={() => onComplete(event._id)}>
+                            <FontAwesomeIcon icon={faCheck} />
+                        </button>
                     )}
-                    <button className="cancel" onClick={onRequestClose}>Close</button>
                 </div>
             </Modal>
         </div>

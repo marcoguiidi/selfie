@@ -13,7 +13,7 @@ const NoteViewer = () => {
   const [isCategoryModalOpen, setCategoryModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [sortOption, setSortOption] = useState('creation date'); // Criterio di ordinamento predefinito
+  const [sortOption, setSortOption] = useState('creation date'); 
 
   useEffect(() => {
     fetchNotes();
@@ -40,15 +40,15 @@ const NoteViewer = () => {
     setCategories(response.data);
   };
 
-  // Funzione di ordinamento delle note in base all'opzione selezionata
+
   const sortedNotes = () => {
-    let sorted = [...notes]; // Copia delle note
+    let sorted = [...notes]; 
     switch (sortOption) {
       case 'creation date':
-        sorted.sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate)); // Più recenti in alto
+        sorted.sort((a, b) => new Date(b.creationDate) - new Date(a.creationDate)); 
         break;
       case 'last modified':
-        sorted.sort((a, b) => new Date(b.lastEdit) - new Date(a.lastEdit)); // Più recenti in alto
+        sorted.sort((a, b) => new Date(b.lastEdit) - new Date(a.lastEdit)); 
         break;
       case 'category':
         sorted.sort((a, b) => {
@@ -136,7 +136,7 @@ const NoteViewer = () => {
         await axios.delete(`/api/notes/${noteId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        fetchNotes(); // Aggiorna la lista delle note dopo l'eliminazione
+        fetchNotes(); 
       } catch (error) {
         console.error('Errore durante l\'eliminazione della nota:', error);
       }
@@ -205,7 +205,6 @@ const NoteViewer = () => {
         })}
       </div>
 
-      {/* Modale per aggiungere una nota */}
       <NoteFormModal
         isOpen={isNoteModalOpen}
         onRequestClose={handleCloseModal}
@@ -214,14 +213,12 @@ const NoteViewer = () => {
         onCategory={handleAddCategory}
       />
 
-      {/* Modale per gestire le categorie */}
       <CategoryFormModal
         isOpen={isCategoryModalOpen}
         onRequestClose={() => setCategoryModalOpen(false)}
         onSave={handleCategorySave}
       />
 
-      {/* Modale per visualizzare la nota completa */}
       {selectedNote && (
         <NoteDetailModal
           show={showDetailModal}

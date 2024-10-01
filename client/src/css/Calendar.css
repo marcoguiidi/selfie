@@ -1,9 +1,67 @@
+.page-content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-  
-  
+@media (max-width: 768px) {
+    .page-content {
+        padding: 10px;
+    }
+}
+
+.rbc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f8f9fa; 
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); 
+}
+
+.rbc-toolbar button {
+    background-color: #007bff; 
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    margin: 0 5px;
+    border-radius: 20px; 
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.rbc-toolbar button:hover {
+    background-color: #0056b3; 
+}
+
+.rbc-toolbar-label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .rbc-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rbc-btn-group {
+        margin-bottom: 10px;
+    }
+
+    .rbc-toolbar-label {
+        font-size: 14px;
+    }
+
+    .rbc-toolbar button {
+        margin-bottom: 8px;
+    }
+}
 
 .rbc-month-view {
-    border-spacing: 0; /* Rimuove la spaziatura tra le celle */
+    border-spacing: 0;
 }
 
 .rbc-month-row {
@@ -14,36 +72,63 @@
     border: none !important;
 }
 
-.rbc-toolbar button {
-    background-color: #007bff; /* Colore di sfondo */
-    color: white; /* Colore del testo */
-    border: none; /* Rimuovi i bordi */
-    padding: 10px 15px;
-    margin: 0 5px;
-    border-radius: 4px; /* Arrotonda i bordi */
+.rbc-event {
+    background-color: #007bff; 
+    color: white;
+    border-radius: 5px;
+    padding: 4px;
+    font-size: 14px;
+    text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
-  
-.rbc-toolbar button:hover {
-    background-color: #0056b3; /* Colore durante hover */
+
+.rbc-event:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
 }
-  
-.rbc-btn-group > button {
-    margin-right: 10px; /* Spaziatura tra i pulsanti di vista */
+
+.rbc-day-slot .rbc-time-slot {
+    border-top: none !important;
 }
-  
-.rbc-toolbar-label {
-    font-weight: bold; /* Evidenzia il titolo corrente */
-    font-size: 18px;
+
+.rbc-time-slot {
+    background-color: #f5f5f5;
+    transition: background-color 0.2s ease;
 }
-  
-.rbc-toolbar button:focus {
-    outline: none; /* Rimuove il bordo focus */
+
+.rbc-time-slot:hover {
+    background-color: #e9ecef;
 }
-  
-.rbc-active-view {
-    background-color: #6c757d !important;
-    color: white !important;
+
+.rbc-today {
+    background-color: #e9f7ff;
+    border-left: 4px solid #007bff;
 }
-  
+
+.rbc-off-range-bg {
+    background-color: #f8f9fa;
+}
+
+.rbc-agenda-view table tbody tr {
+    border-bottom: none;
+}
+
+.rbc-agenda-view table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+    .rbc-event {
+        font-size: 12px;
+        padding: 3px;
+    }
+
+    .rbc-time-view {
+        font-size: 12px;
+    }
+
+    .rbc-month-row {
+        font-size: 12px;
+    }
+}

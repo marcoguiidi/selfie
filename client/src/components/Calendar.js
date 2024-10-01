@@ -18,7 +18,7 @@ const MyCalendar = () => {
     const [view, setView] = useState('month');
     const [date, setDate] = useState(new Date());
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [timeMachineOpen, setTimeMachineOpen] = useState(false); // Stato per TimeMachineModal
+    const [timeMachineOpen, setTimeMachineOpen] = useState(false); 
     const [currentUser, setCurrentUser] = useState(null); 
     const [initialStart, setInitialStart] = useState(null);
     
@@ -31,7 +31,7 @@ const MyCalendar = () => {
                     Authorization: `Bearer ${token}`
                 },
                 params: {
-                    currentDate: selectedDate || new Date() // Usa la data selezionata o la data attuale
+                    currentDate: selectedDate || new Date() 
                 }
             });
     
@@ -56,7 +56,7 @@ const MyCalendar = () => {
                 },
             });
 
-            setCurrentUser(response.data.email); // Imposta l'email dell'utente autenticato
+            setCurrentUser(response.data.email); 
 
         } catch (err) {
             console.error('Error fetching current user:', err.response ? err.response.data : err.message);
@@ -172,7 +172,7 @@ const MyCalendar = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                // setEvents(events.filter(e => e._id !== eventId));
+
                 fetchEvents();
                 setDetailModalOpen(false);
             } catch (err) {
@@ -191,7 +191,7 @@ const MyCalendar = () => {
             });
     
             if (response.status === 200) {
-                // Aggiorna la lista degli eventi rimuovendo l'utente corrente
+
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event._id === eventId ? { 
@@ -233,7 +233,7 @@ const MyCalendar = () => {
         setCurrentDate(newDate);
         setDate(newDate);
         setTimeMachineOpen(false);
-        fetchEvents(newDate); // Passa la nuova data selezionata
+        fetchEvents(newDate); 
     };
     
 
@@ -241,6 +241,7 @@ const MyCalendar = () => {
         const now = new Date();
         setCurrentDate(now);
         setDate(now);
+        fetchEvents();
         setTimeMachineOpen(false);
     };
     

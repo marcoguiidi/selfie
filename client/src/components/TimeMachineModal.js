@@ -4,9 +4,9 @@ import "../css/TimeMachineModal.css";
 
 Modal.setAppElement('#root');
 
-// Funzione per formattare la data e l'ora in un formato compatibile con l'input datetime-local
+
 const formatDateTimeForInput = (date) => {
-  const adjustedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000); // Aggiunge 2 ore
+  const adjustedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000); 
   return adjustedDate.toISOString().slice(0, 16);
 };
 
@@ -15,7 +15,7 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedDateTime(''); // Reset state when modal opens
+      setSelectedDateTime(''); 
     }
   }, [isOpen]);
 
@@ -29,10 +29,30 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
     }
   };
 
-  const handleResetDate = () => {
+  const handleResetDate = async () => {
     const currentDateTime = formatDateTimeForInput(new Date());
     setSelectedDateTime(currentDateTime);
-    onResetDate();
+  
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await fetch('/api/pomodoro/delete-cheated', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to delete cheated Pomodoro sessions');
+      }
+      onResetDate();
+  
+      console.log('Cheated Pomodoro sessions deleted successfully');
+    } catch (error) {
+      console.error('Error deleting cheated Pomodoro sessions:', error);
+    }
   };
 
   const currentDateTime = formatDateTimeForInput(new Date());
@@ -55,8 +75,8 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
         />
       </div>
       <div className="modal-buttons">
-        <button className="set-date" onClick={handleSetDate}>Set Date and Time</button>
-        <button className="reset-date" onClick={handleResetDate}>Reset to Current Date and Time</button>
+        <button className="set-date" onClick={handleSetDate}>Set</button>
+        <button className="reset-date" onClick={handleResetDate}>Reset</button>
         <button className="close" onClick={onRequestClose}>Close</button>
       </div>
     </Modal>

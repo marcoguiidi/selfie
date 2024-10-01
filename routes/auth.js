@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
-// Login Route
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if(!username || !password){
@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Register Route
+
 router.post('/register', async (req, res) => {
   const { username, email, password, realName, birthday } = req.body;
   if (!username || !email || !password) {
@@ -61,7 +61,7 @@ router.post('/register', async (req, res) => {
       parentEvent: null
     });
 
-    await birthdayEvent.save(); // Considera l'aggiunta di un blocco try-catch qui.
+    await birthdayEvent.save(); 
 
     const defaultCategories = ['Unibo', 'Altro'];
     const categoryPromises = defaultCategories.map(async (cat) => {

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const authenticateJWT = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1]; // Estrarre il token dal header
+    const token = req.headers['authorization']?.split(' ')[1]; 
 
     if (!token) return res.status(401).json({ message: 'No token provided' });
 
@@ -10,7 +10,7 @@ const authenticateJWT = (req, res, next) => {
         if (err) return res.status(403).json({ message: 'Invalid token' });
 
         try {
-            // Trova l'utente nel database per ottenere l'email
+
             const foundUser = await User.findById(user.id);
             if (!foundUser) return res.status(404).json({ message: 'User not found' });
 

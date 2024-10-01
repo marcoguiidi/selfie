@@ -1,60 +1,59 @@
-/* Navbar */
 .navbar {
-    position: fixed; /* Rende la navbar fissa */
+    position: fixed; 
     top: 0;
     width: 100%;
-    height: 60px; /* Altezza della navbar */
-    background-color: white; /* Colore di sfondo */
-    color: gray; /* Colore delle icone */
+    height: 60px; 
+    background-color: white; 
+    color: gray; 
     z-index: 1000;
     display: flex;
-    justify-content: space-between; /* Allinea il contenuto tra i bordi */
+    justify-content: space-between;
     align-items: center;
-    padding: 0 20px; /* Spaziatura laterale */
-    box-shadow: none; /* Rimuovi ombra */
-    transition: background-color 0.3s ease; /* Animazione del colore di sfondo */
+    padding: 0 20px; 
+    box-shadow: none; 
+    transition: background-color 0.3s ease; 
 }
 
 .page-content {
-    margin-top: 30px; /* Altezza della navbar */
-    padding: 20px; /* Spaziatura interna */
-    transition: margin-top 0.3s ease; /* Animazione per il cambiamento del margine */
+    margin-top: 30px; 
+    padding: 20px; 
+    transition: margin-top 0.3s ease; 
 }
 
 .navbar-icons {
     display: flex;
     align-items: center;
-    margin-left: auto; /* Sposta le icone a destra */
+    margin-left: auto; 
 }
 
 .nav-icon {
-    color: gray; /* Colore delle icone */
-    font-size: 24px; /* Dimensione delle icone */
-    margin: 0 10px; /* Spaziatura tra le icone */
-    text-decoration: none; /* Rimuovi sottolineatura */
+    color: gray; 
+    font-size: 24px; 
+    margin: 0 10px; 
+    text-decoration: none; 
 }
 
 .nav-icon {
-    color: gray; /* Colore delle icone */
-    font-size: 24px; /* Dimensione delle icone */
-    margin: 0 10px; /* Spaziatura tra le icone */
-    text-decoration: none; /* Rimuovi sottolineatura */
+    color: gray; 
+    font-size: 24px; 
+    margin: 0 10px; 
+    text-decoration: none;
 }
 
 .nav-icon i {
-    font-size: 24px; /* Dimensione icona Font Awesome */
+    font-size: 24px; 
 }
 
-/* Nascondi le icone in mobile */
+
 @media (max-width: 768px) {
 
     .navbar-icons {
-        display: none; /* Nascondi le icone su mobile */
+        display: none; 
     }
 }
 
 .navbar-toggle {
-    display: none; /* Nascondi il pulsante sul desktop */
+    display: none; 
 }
 
 .menu-icon {
@@ -62,18 +61,18 @@
     cursor: pointer;
 }
 
-/* Stili per il menu a tendina */
+
 .navbar-menu {
     position: absolute;
-    top: 60px; /* Posizionamento sotto la navbar */
+    top: 60px; 
     left: 0;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.8); /* Trasparente */
-    display: none; /* Nascondi per impostazione predefinita */
+    background-color: rgba(255, 255, 255, 0.8); 
+    display: none; 
 }
 
 .navbar-menu.open {
-    display: block; /* Mostra il menu quando è aperto */
+    display: block; 
 }
 
 .navbar-menu ul {
@@ -88,31 +87,31 @@
 }
 
 .navbar-menu ul li a {
-    color: gray; /* Colore del testo */
+    color: gray; 
     text-decoration: none;
     font-size: 18px;
 }
 
 .navbar-menu ul li a:hover {
-    background-color: rgba(100, 100, 100, 0.2); /* Effetto hover */
+    background-color: rgba(100, 100, 100, 0.2); 
 }
 
-/* Media Queries per dispositivi mobili */
+
 @media (max-width: 768px) {
     .navbar {
         height: 40px;
     }
 
     .navbar-toggle {
-        display: block; /* Mostra il pulsante sul mobile */
+        display: block; 
     }
 
     .navbar-menu {
-        display: none; /* Nascondi il menu per impostazione predefinita */
+        display: none; 
     }
 
     .navbar-menu.open {
-        display: block; /* Mostra il menu quando è aperto */
+        display: block; 
     }
 }
 

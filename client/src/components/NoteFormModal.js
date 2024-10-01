@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
+import '../css/NoteFormModal.css'; 
 
 const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => {
   const [title, setTitle] = useState('');
@@ -18,7 +19,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
       setContent('');
       setSelectedCategory(null);
     }
-  },[note]);
+  }, [note]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -45,7 +46,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const noteData ={
+    const noteData = {
       title,
       content,
       category: selectedCategory,
@@ -55,10 +56,10 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
   }
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add/Edit Note">
-      <h2>Add Note</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <Modal isOpen={isOpen} onRequestClose={onRequestClose} contentLabel="Add/Edit Note" className="note-form-modal">
+      <h2 className="note-form-modal__title">Add Note</h2>
+      <form onSubmit={handleSubmit} className="note-form-modal__form">
+        <div className="note-form-modal__input">
           <label>Title:</label>
           <input
             type="text"
@@ -67,7 +68,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
             required
           />
         </div>
-        <div>
+        <div className="note-form-modal__input">
           <label>Content:</label>
           <textarea
             value={content}
@@ -75,7 +76,7 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
             required
           />
         </div>
-        <div>
+        <div className="note-form-modal__markdown-instructions">
           <h4>Instructions for Markdown:</h4>
           <p>
             Use **bold** for bold text, *italic* for italic text, and `code` for inline code.
@@ -84,28 +85,34 @@ const NoteFormModal = ({ isOpen, onRequestClose, onSave, note, onCategory }) => 
             For lists, use - for bullet points and 1. for numbered lists.
           </p>
         </div>
-        <div>
+        <div className="note-form-modal__input">
           <label>Category:</label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            required
-          >
-            <option value="">Select a category</option>
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))
-            ) : (
-              <option value="">No categories available</option>
-            )}
-          </select>
+          <div className="note-form-modal__category-container">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              required
+            >
+              <option value="">Select a category</option>
+              {Array.isArray(categories) && categories.length > 0 ? (
+                categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))
+              ) : (
+                <option value="">No categories available</option>
+              )}
+            </select>
+            <button type="button" onClick={onCategory} className="note-form-modal__button note-form-modal__button--edit"> 
+              Edit Categories
+            </button>
+          </div>
         </div>
-        <button type="submit">Save Note</button>
-        <button type="button" onClick={onRequestClose}>Cancel</button>
-        <button type='button' onClick={onCategory}>edit categories</button>
+        <div className="note-form-modal__button-container">
+          <button type="submit" className="note-form-modal__button note-form-modal__button--save">Save Note</button>
+          <button type="button" onClick={onRequestClose} className="note-form-modal__button note-form-modal__button--cancel">Cancel</button>
+        </div>
       </form>
     </Modal>
   );

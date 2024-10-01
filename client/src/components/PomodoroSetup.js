@@ -19,17 +19,20 @@ const PomodoroSetup = ({ onSetupComplete }) => {
   const generateCombinations = () => {
     const totalMinutes = totalHours * 60;
     const combinations = [];
-
+  
     for (let studyTime = 20; studyTime <= 50; studyTime += 5) {
       for (let breakTime = 5; breakTime <= 15; breakTime += 5) {
         for (let longBreakTime = breakTime * 2; longBreakTime <= breakTime * 3; longBreakTime += 5) {
           for (let cyclesBeforeLongBreak = 2; cyclesBeforeLongBreak <= 5; cyclesBeforeLongBreak++) {
             const cycleTime = studyTime + breakTime;
             const longBreakCycleTime = studyTime + longBreakTime;
-            
+  
             let cycles = cyclesBeforeLongBreak;
             while (true) {
-              const totalTime = (cycleTime * (cycles - 1)) + longBreakCycleTime * Math.floor((cycles - 1) / cyclesBeforeLongBreak);
+              const normalCycles = cycles - Math.floor(cycles / cyclesBeforeLongBreak);
+              const longBreakCycles = Math.floor(cycles / cyclesBeforeLongBreak);
+              const totalTime = (normalCycles * cycleTime) + (longBreakCycles * longBreakCycleTime);
+  
               if (totalTime > totalMinutes) break;
               if (Math.abs(totalTime - totalMinutes) <= 30) {
                 combinations.push({
@@ -47,7 +50,7 @@ const PomodoroSetup = ({ onSetupComplete }) => {
         }
       }
     }
-
+  
     setCombinations(combinations.sort((a, b) => Math.abs(a.totalTime - totalMinutes) - Math.abs(b.totalTime - totalMinutes)));
   };
 
@@ -71,18 +74,26 @@ const PomodoroSetup = ({ onSetupComplete }) => {
     });
   };
 
+  const handleNumberInputChange = (setter) => (e) => {
+    const value = Math.max(1, parseInt(e.target.value) || 1);
+    setter(value);
+  };
+
   return (
     <div className="pomodoro-setup">
-      <h2>Pomodoro Timer Setup</h2>
-      <div>
-        <label htmlFor="totalHours">Total Study Hours: </label>
-        <input
-          id="totalHours"
-          type="number"
-          value={totalHours}
-          onChange={(e) => setTotalHours(Number(e.target.value))}
-        />
-      </div>
+      <h2>SETUP</h2>
+      {!manualSetup && (
+        <div>
+          <label htmlFor="totalHours">Total Study Hours: </label>
+          <input
+            id="totalHours"
+            type="number"
+            value={totalHours}
+            onChange={handleNumberInputChange(setTotalHours)}
+            min="1"
+          />
+        </div>
+      )}
       {!manualSetup && (
         <div>
           <label htmlFor="combinationSelect">Select a Combination: </label>
@@ -108,7 +119,8 @@ const PomodoroSetup = ({ onSetupComplete }) => {
               id="studyDuration"
               type="number"
               value={studyDuration}
-              onChange={(e) => setStudyDuration(Number(e.target.value))}
+              onChange={handleNumberInputChange(setStudyDuration)}
+              min="1"
             />
           </div>
           <div>
@@ -117,7 +129,8 @@ const PomodoroSetup = ({ onSetupComplete }) => {
               id="breakDuration"
               type="number"
               value={breakDuration}
-              onChange={(e) => setBreakDuration(Number(e.target.value))}
+              onChange={handleNumberInputChange(setBreakDuration)}
+              min="1"
             />
           </div>
           <div>
@@ -126,7 +139,8 @@ const PomodoroSetup = ({ onSetupComplete }) => {
               id="longBreakDuration"
               type="number"
               value={longBreakDuration}
-              onChange={(e) => setLongBreakDuration(Number(e.target.value))}
+              onChange={handleNumberInputChange(setLongBreakDuration)}
+              min="1"
             />
           </div>
           <div>
@@ -135,7 +149,8 @@ const PomodoroSetup = ({ onSetupComplete }) => {
               id="cyclesBeforeLongBreak"
               type="number"
               value={cyclesBeforeLongBreak}
-              onChange={(e) => setCyclesBeforeLongBreak(Number(e.target.value))}
+              onChange={handleNumberInputChange(setCyclesBeforeLongBreak)}
+              min="1"
             />
           </div>
           <div>
@@ -144,7 +159,8 @@ const PomodoroSetup = ({ onSetupComplete }) => {
               id="totalCycles"
               type="number"
               value={totalCycles}
-              onChange={(e) => setTotalCycles(Number(e.target.value))}
+              onChange={handleNumberInputChange(setTotalCycles)}
+              min="1"
             />
           </div>
         </>

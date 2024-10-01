@@ -1,10 +1,10 @@
-/* Per offuscare lo sfondo */
+
 .modal-backdrop.show {
     opacity: 0.7;
     background-color: rgba(0, 0, 0, 0.7);
   }
   
-  /* Stile per la modale grande */
+
   .note-detail-modal .modal-content {
     background-color: #f8f9fa;
     border-radius: 10px;

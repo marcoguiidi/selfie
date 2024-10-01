@@ -12,6 +12,7 @@ const EventSchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'expired', 'completed'], default: 'active' },
   repetition: { type: String, default: 'no-repetition' },
   endRepetition: Date,
+  cheated: { type: Boolean, default: false },
   parentEvent: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', default: null }
 });
 

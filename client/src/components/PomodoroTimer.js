@@ -378,7 +378,6 @@ const AdvancedPomodoroTimer = () => {
     setTimerStatus('READY');
     updateTimerDisplay(setupData.studyDuration * 60);
     
-    // Avvia immediatamente una nuova sessione dopo il setup
     startNewSession(setupData);
   }, [debugLog, updateTimerDisplay, startNewSession]);
 
@@ -443,9 +442,34 @@ const AdvancedPomodoroTimer = () => {
     </div>
   ), [timerStatus]);
 
+  const renderActionButtons = () => {
+    if (timerStatus === 'INTERVAL') {
+      return (
+        <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
+      );
+    } else if (timerStatus === 'PAUSED') {
+      return (
+        <>
+          <button onClick={handleStartResume}>Resume</button>
+          <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
+            {timerStatus === 'READY' ? 'Start' : 'Resume'}
+          </button>
+          {isRunning && <button onClick={pauseSession}>Pause</button>}
+          <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
+        </>
+      );
+    }
+  };
+
   return (
     <div className="pomodoro-container">
-      <h1>Advanced Pomodoro Timer</h1>
+      <h1>🍅 ⏲️</h1>
       {error && <div className="error-message">{error}</div>}
       {showSetup ? (
         <PomodoroSetup onSetupComplete={handleSetupComplete} />
@@ -457,11 +481,7 @@ const AdvancedPomodoroTimer = () => {
           <div className="timer-display">{timerDisplay}</div>
           <div className="timer-status">{timerStatus}</div>
           <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>
-          <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
-            {timerStatus === 'PAUSED' ? 'Resume' : 'Start'}
-          </button>
-          <button onClick={pauseSession} disabled={!isRunning}>Pause</button>
-          <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
+          {renderActionButtons()}
           <button onClick={openTimeMachine}>Time Machine</button>
           {isTimeMachineActive && (
             <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>

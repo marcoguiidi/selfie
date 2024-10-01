@@ -1,67 +1,79 @@
-/* Stile generale della pagina */
 .page-content {
     padding: 20px;
+    font-family: 'Arial', sans-serif;
 }
 
-/* Griglia degli elementi (eventi e note) */
-.grid {
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.events-selector-container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-top: 20px;
+    justify-content: flex-start;
+    margin-bottom: 20px;
 }
 
-/* Stile dei riquadri per eventi e note */
-.req {
+.events-selector {
+    width: 150px;
+    padding: 5px;
     border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.events-selector:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.req {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin: 10px;
-    flex: 1 1 calc(33% - 20px); /* Massimo 3 per riga */
+    flex: 1;
+    min-width: 250px;
+    transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
-    transition: transform 0.2s;
 }
 
 .req:hover {
     transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Sezione del calendario con selettore */
-.calendar-section {
-    flex: 1 1 calc(33% - 20px); /* Stessa larghezza del div del calendario */
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
+.event-item {
+    margin: 10px 0;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
 }
 
-/* Selettore di eventi */
-.events-selector {
-    width: 20%; 
-    height: min-content;
-    padding: 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    outline: none;
-    background-color: #f9f9f9;
-    color: #333;
-    margin-bottom: 5px; /* Spazio tra selettore e calendario */
+.event-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Media query per schermi più piccoli */
+.expired {
+    color: red;
+}
+
 @media (max-width: 768px) {
-    .req {
-        flex: 1 1 calc(50% - 20px); /* Massimo 2 per riga */
+    .flex-container {
+        flex-direction: column;
     }
-    .events-selector{
-        width: fit-content;
-    }
-}
 
-@media (max-width: 480px) {
     .req {
-        flex: 1 1 100%; /* Massimo 1 per riga */
-    }
-    .events-selector{
-        width: fit-content;
+        min-width: 100%;
+        margin-bottom: 20px;
     }
 }

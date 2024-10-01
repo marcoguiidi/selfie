@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import '../css/Navbar.css'; // Associa il file CSS per lo stile
+import '../css/Navbar.css'; 
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navbarMenuRef = useRef(null);
-    const location = useLocation(); // Rileva la posizione attuale
+    const location = useLocation(); 
 
     const toggleNavbar = () => {
         setIsOpen(!isOpen);
@@ -16,21 +16,21 @@ const Navbar = () => {
         const navbarMenu = navbarMenuRef.current;
 
         if (pageContent && navbarMenu) {
-            // Condizione basata sulla larghezza dello schermo
-            const isMobile = window.innerWidth <= 768; // Modifica il valore per adattarlo ai tuoi requisiti
+
+            const isMobile = window.innerWidth <= 768; 
 
             if (isMobile) {
-                pageContent.style.marginTop = `${isOpen ? '150px' : '40px'}`; // Imposta il margine per mobile
+                pageContent.style.marginTop = `${isOpen ? '150px' : '40px'}`; 
             }
         }
     }, [isOpen]);
 
     useEffect(() => {
-        // Chiudi la navbar quando si cambia pagina
+
         if (isOpen) {
             setIsOpen(false);
         }
-    }, [location]); // Aggiungi location come dipendenza
+    }, [location]); 
 
     return (
         <nav className="navbar">

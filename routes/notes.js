@@ -3,7 +3,7 @@ const router = express.Router();
 const Note = require('../models/Note');
 const authenticateJWT = require('../middleware/authenticateJWT');
 
-// Ottieni tutte le note dell'utente loggato
+
 router.get('/', authenticateJWT, async (req, res) => {
   try {
     const notes = await Note.find({ createdBy: req.user.id }).populate('category', 'name');
@@ -17,20 +17,20 @@ router.get('/latest', authenticateJWT, async (req, res) => {
   try {
       const latestNote = await Note.findOne({ createdBy: req.user.id })
           .populate('category', 'name')
-          .sort({ creationDate: -1 }); // Ordina per creationDate in ordine decrescente
+          .sort({ creationDate: -1 }); 
 
       if (!latestNote) {
           return res.status(404).json({ message: 'No notes found' });
       }
 
-      res.json(latestNote); // Restituisci solo l'ultima nota
+      res.json(latestNote); 
   } catch (error) {
       console.error('Error fetching latest note:', error);
       res.status(500).json({ message: 'Error fetching notes' });
   }
 });
 
-// Aggiungi una nuova nota
+
 router.post('/', authenticateJWT, async (req, res) => {
   const { title, content, category } = req.body;
 
@@ -76,7 +76,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
   }
 });
 
-// Elimina una nota
+
 router.delete('/:id', authenticateJWT, async (req, res) => {
   try {
     await Note.findOneAndDelete({ _id: req.params.id, createdBy: req.user.id });

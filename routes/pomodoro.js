@@ -64,7 +64,7 @@ router.post('/start', authenticateJWT, async (req, res) => {
 
     await session.save();
 
-    // Create an event for the Pomodoro session
+
     const eventData = {
       title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
       start: now,
@@ -73,7 +73,7 @@ router.post('/start', authenticateJWT, async (req, res) => {
       description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.breakMinutes} minutes break`,
       createdBy: req.user.id,
       invited: '', 
-      color: '#FF6347', // Tomato color for Pomodoro
+      color: '#FF6347', 
       repetition: 'no-repetition',
       status: 'active'
     };
@@ -84,7 +84,7 @@ router.post('/start', authenticateJWT, async (req, res) => {
 
     res.status(201).json({
       session: session,
-      // event: newEvent
+
     });
   } catch (error) {
     console.error('Error starting new session:', error);
@@ -126,9 +126,8 @@ router.patch('/:id/:action', authenticateJWT, async (req, res) => {
         switch (state) {
           case 'aborted':
             session.completed = true;
-            // session.endTime = now;
             debugLog('Session aborted at:', now);
-            await updatePomodoroEvent(session, now);
+            await updatePomodoroEvent(session);
             break;
           case 'completed':
             session.completed = true;
@@ -183,7 +182,7 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
         await specificLastSession.save();
         debugLog('Sessione salvata dopo essere stata contrassegnata come cheated');
 
-        const elapsedTime = (date - specificLastSession.startTime) / 1000 / 60; // in minutes
+        const elapsedTime = (date - specificLastSession.startTime) / 1000 / 60;
         const totalSessionTime = specificLastSession.durationMinutes + specificLastSession.maxPausedDuration;
 
         debugLog('Calcoli temporali:', { 
@@ -206,8 +205,8 @@ router.get('/last/:date?/:cheated?', authenticateJWT, async (req, res) => {
           await completeSession(specificLastSession, date);
           await updatePomodoroEvent(specificLastSession, date);
           debugLog('Creazione della prossima sessione');
-          specificLastSession = await createNextSession(specificLastSession, date);
-          if (specificLastSession) await createPomodoroEvent(specificLastSession);
+          specificLastSession = await createNextSession(specificLastSession, date, cheated); 
+          if (specificLastSession) await createPomodoroEvent(specificLastSession, cheated); 
           else {        
           debugLog('Tutti i cicli sono stati completati, nessuna nuova sessione creata');
           return res.status(200).json({ status: 'completed', message: 'Tutti i cicli sono stati completati, nessuna nuova sessione creata' });
@@ -257,12 +256,13 @@ async function completeSession(session, date) {
   }
 }
 
-async function createNextSession(completedSession, date) {
+async function createNextSession(completedSession, date, cheated) {
   debugLog('Entering createNextSession', { 
     completedSessionId: completedSession._id, 
     completedSessionCycle: completedSession.cycle,
     totalCycles: completedSession.totalCycles,
-    date 
+    date,
+    cheated
   });
 
   if (completedSession.cycle === completedSession.totalCycles) {
@@ -289,7 +289,8 @@ async function createNextSession(completedSession, date) {
     cyclesBeforeLongBreak: completedSession.cyclesBeforeLongBreak,
     totalCycles: completedSession.totalCycles,
     cycle: newCycle,
-    maxPausedDuration: maxPausedDuration
+    maxPausedDuration: maxPausedDuration,
+    cheated: cheated 
   });
 
   debugLog('New session details:', {
@@ -297,18 +298,20 @@ async function createNextSession(completedSession, date) {
     startTime: newSession.startTime,
     durationMinutes: newSession.durationMinutes,
     cycle: newSession.cycle,
-    maxPausedDuration: newSession.maxPausedDuration
+    maxPausedDuration: newSession.maxPausedDuration,
+    cheated: newSession.cheated
   });
 
   try {
     await newSession.save();
     debugLog('New session saved successfully');
+    await createPomodoroEvent(newSession, cheated); 
   } catch (error) {
     debugLog('Error saving new session:', error);
     throw error;
   }
 
-  const elapsedTime = (date - newSession.startTime) / 1000 / 60; // in minutes
+  const elapsedTime = (date - newSession.startTime) / 1000 / 60; 
   const totalSessionTime = newSession.durationMinutes + newSession.maxPausedDuration;
 
   debugLog('Checking if new session is already completed', {
@@ -322,32 +325,14 @@ async function createNextSession(completedSession, date) {
     debugLog('New session is already completed, recursively completing and creating next');
     await completeSession(newSession, date);
     await updatePomodoroEvent(newSession, date);
-    return await createNextSession(newSession, date);
+    return await createNextSession(newSession, date, cheated); 
   }
 
   debugLog('Returning new active session');
   return newSession;
 }
 
-async function updatePomodoroEvent(session, endTime) {
-  debugLog('Updating Pomodoro event for session:', session._id);
-  const event = await Event.findOne({
-    title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
-    createdBy: session.userId,
-    start: session.startTime
-  });
-
-  if (event) {
-    event.end = endTime;
-    event.isDeadline = false;
-    await event.save();
-    debugLog('Associated event updated:', event);
-  } else {
-    debugLog('No associated event found for the session');
-  }
-}
-
-async function createPomodoroEvent(session) {
+async function createPomodoroEvent(session, cheated) {
   debugLog('Creating new Pomodoro event for session:', session._id);
   const eventData = {
     title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
@@ -357,14 +342,103 @@ async function createPomodoroEvent(session) {
     description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.maxPausedDuration} minutes break`,
     createdBy: session.userId,
     invited: '', 
-    color: '#FF6347', // Tomato color for Pomodoro
+    color: '#FF6347', 
     repetition: 'no-repetition',
-    status: 'active'
+    status: 'active',
+    cheated: cheated 
   };
 
   const newEvent = new Event(eventData);
   await newEvent.save();
   debugLog('New event created for Pomodoro session:', newEvent);
 }
+
+async function updatePomodoroEvent(session, endTime=null) {
+  debugLog('Updating Pomodoro event for session:', session._id);
+  const event = await Event.findOne({
+    title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+    createdBy: session.userId,
+    start: session.startTime
+  });
+
+  if (event) {
+    if (endTime) {
+      const breakMinutes = session.cycle % session.cyclesBeforeLongBreak === 0 ? session.longBreakMinutes : session.breakMinutes;
+      const calculatedEndTime = new Date(session.startTime.getTime() + (session.durationMinutes + breakMinutes) * 60000);
+  
+      event.end = calculatedEndTime;
+    }
+    event.cheated = session.cheated;
+    event.isDeadline = false;
+    event.status = 'completed';
+    await event.save();
+    debugLog('Associated event updated:', event);
+  } else {
+    debugLog('No associated event found for the session');
+  }
+}
+
+async function createPomodoroEvent(session, cheated) {
+  debugLog('Creating new Pomodoro event for session:', session._id);
+  const eventData = {
+    title: `Pomodoro Session ${session.cycle}/${session.totalCycles}`,
+    start: session.startTime,
+    end: session.startTime,
+    isDeadline: true,
+    description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.maxPausedDuration} minutes break`,
+    createdBy: session.userId,
+    invited: '', 
+    color: '#FF6347',
+    repetition: 'no-repetition',
+    status: 'active',
+    cheated: cheated 
+  };
+
+  const newEvent = new Event(eventData);
+  await newEvent.save();
+  debugLog('New event created for Pomodoro session:', newEvent);
+}
+
+router.delete('/delete-cheated', authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    debugLog('Deleting cheated Pomodoro sessions and events for user:', userId);
+
+
+    const cheatedSessions = await PomodoroSession.find({ userId, cheated: true });
+
+    if (cheatedSessions.length === 0) {
+      debugLog('No cheated sessions found for user:', userId);
+      return res.status(404).json({ message: 'No cheated sessions found' });
+    }
+
+
+    const startTimes = cheatedSessions.map(session => session.startTime);
+
+
+    const deleteEventsResult = await Event.deleteMany({
+      createdBy: userId,
+      start: { $in: startTimes },
+      cheated: true
+    });
+
+    debugLog(`Deleted ${deleteEventsResult.deletedCount} events associated with cheated sessions`);
+
+
+    const deletePomodorosResult = await PomodoroSession.deleteMany({ userId, cheated: true });
+
+    debugLog(`Deleted ${deletePomodorosResult.deletedCount} cheated Pomodoro sessions for user:`, userId);
+
+    res.status(200).json({ 
+      message: 'Cheated Pomodoro sessions and associated events deleted successfully',
+      deletedSessions: deletePomodorosResult.deletedCount,
+      deletedEvents: deleteEventsResult.deletedCount
+    });
+
+  } catch (error) {
+    console.error('Error deleting cheated Pomodoro sessions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;

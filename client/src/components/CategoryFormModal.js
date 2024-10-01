@@ -28,7 +28,7 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
   };
 
   useEffect(() => {
-    fetchCategories(); // Recupera le categorie ogni volta che il modal si apre
+    fetchCategories(); 
   }, [isOpen]);
 
   const handleSubmit = async (e) => {
@@ -39,8 +39,8 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
       await axios.post('/api/categories', { name: categoryName }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCategoryName(''); // Resetta il campo dopo l'aggiunta
-      fetchCategories(); // Ricarica le categorie
+      setCategoryName(''); 
+      fetchCategories(); 
     } catch (error) {
       console.error('Error adding category:', error);
     }
@@ -53,7 +53,7 @@ const CategoryFormModal = ({ isOpen, onRequestClose, onSave }) => {
       await axios.delete(`/api/categories/${categoryId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchCategories(); // Ricarica le categorie dopo l'eliminazione
+      fetchCategories(); 
     } catch (error) {
       console.error('Error deleting category:', error);
     }
