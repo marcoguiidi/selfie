@@ -150,17 +150,21 @@ const AdvancedPomodoroTimer = () => {
     }
   }, [debugLog, getAuthConfig, initializeTimer, resetTimer, totalCycles]);
 
-  const startNewSession = useCallback(async () => {
-    debugLog('Starting a new session...');
+  const startNewSession = useCallback(async (setupData = null) => {
+    debugLog('Starting a new session...', setupData);
     try {
-      const response = await axios.post('/api/pomodoro/start', {
-        durationMinutes: studyDuration,
-        breakMinutes: breakDuration,
-        longBreakMinutes: longBreakDuration,
-        cyclesBeforeLongBreak: cyclesBeforeLongBreak,
-        totalCycles: totalCycles,
+      const sessionData = {
+        durationMinutes: setupData ? setupData.studyDuration : studyDuration,
+        breakMinutes: setupData ? setupData.breakDuration : breakDuration,
+        longBreakMinutes: setupData ? setupData.longBreakDuration : longBreakDuration,
+        cyclesBeforeLongBreak: setupData ? setupData.cyclesBeforeLongBreak : cyclesBeforeLongBreak,
+        totalCycles: setupData ? setupData.totalCycles : totalCycles,
         timeMachineDate: isTimeMachineActive ? currentDate.toISOString() : undefined
-      }, getAuthConfig());
+      };
+  
+      debugLog('Sending session data:', sessionData);
+  
+      const response = await axios.post('/api/pomodoro/start', sessionData, getAuthConfig());
       debugLog('New session started:', JSON.stringify(response.data, null, 2));
       
       const newSession = response.data.session;
@@ -313,14 +317,21 @@ const AdvancedPomodoroTimer = () => {
     }
   }, [timerStatus, isAllCompleted, getPomodoroState]);
 
-  const renderCompletionScreen = useCallback(() => (
-    <div className="completion-screen">
-      {renderPomodoroSVG()}
-      <h2>Congratulations!</h2>
-      <p>{maxCompletedCycles}/{totalCycles} COMPLETED</p>
-      <button onClick={resetTimer}>Start New Session</button>
-    </div>
-  ), [maxCompletedCycles, totalCycles, resetTimer]);
+  const renderCompletionScreen = useCallback(() => {
+    const handleStartNewSession = () => {
+      resetTimer();
+      window.location.reload();
+    };
+  
+    return (
+      <div className="completion-screen">
+        {renderPomodoroSVG()}
+        <h2>Congratulations!</h2>
+        <p>{maxCompletedCycles}/{totalCycles} COMPLETED</p>
+        <button onClick={handleStartNewSession}>Start New Session</button>
+      </div>
+    );
+  }, [maxCompletedCycles, totalCycles, resetTimer]);
 
   const handleStartResume = useCallback(() => {
     debugLog('handleStartResume called. Current status:', timerStatus);
@@ -366,7 +377,10 @@ const AdvancedPomodoroTimer = () => {
     setShowSetup(false);
     setTimerStatus('READY');
     updateTimerDisplay(setupData.studyDuration * 60);
-  }, [debugLog, updateTimerDisplay]);
+    
+    // Avvia immediatamente una nuova sessione dopo il setup
+    startNewSession(setupData);
+  }, [debugLog, updateTimerDisplay, startNewSession]);
 
   const openTimeMachine = useCallback(() => {
     let initialDate;
