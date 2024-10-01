@@ -52,7 +52,8 @@ router.get('/lastPomodoro', authenticateJWT, async (req, res) => {
     // Trova l'evento che inizia con "pomodoro Session" e ha il colore '#FF6347'
     const pomodoro = await Event.findOne({
       title: { $regex: '^Pomodoro Session', $options: 'i' }, // Usa regex per cercare all'inizio
-      color: '#FF6347'
+      color: '#FF6347',
+      createdBy: req.user.id, 
     })
       .sort({ end: -1 }) // Ordina per endDate in ordine decrescente
       .exec(); // Esegui la query

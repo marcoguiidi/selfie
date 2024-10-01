@@ -356,7 +356,7 @@ async function createPomodoroEvent(session) {
     isDeadline: true,
     description: `Pomodoro session for ${session.durationMinutes} minutes with ${session.maxPausedDuration} minutes break`,
     createdBy: session.userId,
-    invited: null, 
+    invited: '', 
     color: '#FF6347', // Tomato color for Pomodoro
     repetition: 'no-repetition',
     status: 'active'
