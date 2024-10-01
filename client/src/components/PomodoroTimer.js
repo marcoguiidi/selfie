@@ -17,7 +17,8 @@ const AdvancedPomodoroTimer = () => {
   const [currentCycle, setCurrentCycle] = useState(1);
   const [timeMachineStartTime, setTimeMachineStartTime] = useState(null);
   const [timeMachineInitialDate, setTimeMachineInitialDate] = useState(new Date());
-  
+  const [timeMachineError, setTimeMachineError] = useState(null);
+
   const [studyDuration, setStudyDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
   const [longBreakDuration, setLongBreakDuration] = useState(15);
@@ -344,12 +345,31 @@ const AdvancedPomodoroTimer = () => {
   
   const handleSetDate = useCallback((newDate) => {
     debugLog('handleSetDate called with:', newDate);
+    
+    const now = new Date();
+    const isValidDate = (date) => date instanceof Date && !isNaN(date);
+    
+    if (!isValidDate(newDate)) {
+      setTimeMachineError("Invalid date");
+      return;
+    }
+
+    if (!isTimeMachineActive && newDate < now) {
+      setTimeMachineError("Cannot set a date in the past");
+      return;
+    }
+
+    if (isTimeMachineActive && newDate <= currentDate) {
+      setTimeMachineError("New date must be after the current time machine date");
+      return;
+    }
+
     setCurrentDate(newDate);
     setIsTimeMachineOpen(false);
     setIsTimeMachineActive(true);
     setTimeMachineStartTime(Date.now());
     fetchSessionData(newDate, true);
-  }, [debugLog, fetchSessionData]);
+  }, [debugLog, fetchSessionData, isTimeMachineActive, currentDate]);
   
   const handleResetDate = useCallback(() => {
     debugLog('handleResetDate called');
@@ -392,6 +412,16 @@ const AdvancedPomodoroTimer = () => {
     setTimeMachineInitialDate(initialDate);
     setIsTimeMachineOpen(true);
   }, [isTimeMachineActive, timeMachineStartTime, currentDate]);
+
+  useEffect(() => {
+    if (timeMachineError) {
+      const timer = setTimeout(() => {
+        setTimeMachineError(null);
+        window.location.reload();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [timeMachineError]);
 
   const renderPomodoroSVG = useCallback(() => (
     <div className={`pomodoro-animation ${timerStatus === 'COMPLETED' ? 'completed' : ''}`}>
@@ -457,9 +487,11 @@ const AdvancedPomodoroTimer = () => {
     } else {
       return (
         <>
-          <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
-            {timerStatus === 'READY' ? 'Start' : 'Resume'}
-          </button>
+          {timerStatus === 'READY' && (
+            <button onClick={handleStartResume} disabled={isRunning || timerStatus === 'LOADING'}>
+              Start
+            </button>
+          )}
           {isRunning && <button onClick={pauseSession}>Pause</button>}
           <button onClick={handleAbort} disabled={!currentSession}>Stop</button>
         </>
@@ -469,30 +501,39 @@ const AdvancedPomodoroTimer = () => {
 
   return (
     <div className="pomodoro-container">
-      <h1>🍅 ⏲️</h1>
-      {error && <div className="error-message">{error}</div>}
-      {showSetup ? (
-        <PomodoroSetup onSetupComplete={handleSetupComplete} />
-      ) : isAllCompleted ? (
-        renderCompletionScreen()
+      {timeMachineError ? (
+        <div className="error-screen">
+          <div className="error-message">{timeMachineError}</div>
+          <div>Reloading page...</div>
+        </div>
       ) : (
         <>
-          {renderPomodoroSVG()}
-          <div className="timer-display">{timerDisplay}</div>
-          <div className="timer-status">{timerStatus}</div>
-          <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>
-          {renderActionButtons()}
-          <button onClick={openTimeMachine}>Time Machine</button>
-          {isTimeMachineActive && (
-            <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
+          <h1>🍅 ⏲️</h1>
+          {error && <div className="error-message">{error}</div>}
+          {showSetup ? (
+            <PomodoroSetup onSetupComplete={handleSetupComplete} />
+          ) : isAllCompleted ? (
+            renderCompletionScreen()
+          ) : (
+            <>
+              {renderPomodoroSVG()}
+              <div className="timer-display">{timerDisplay}</div>
+              <div className="timer-status">{timerStatus}</div>
+              <div className="cycle-display">Cycle: {currentCycle}/{totalCycles}</div>
+              {renderActionButtons()}
+              <button onClick={openTimeMachine}>Time Machine</button>
+              {isTimeMachineActive && (
+                <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
+              )}
+              <TimeMachineModal
+                isOpen={isTimeMachineOpen}
+                onRequestClose={() => setIsTimeMachineOpen(false)}
+                onSetDate={handleSetDate}
+                onResetDate={handleResetDate}
+                initialDate={timeMachineInitialDate}
+              />
+            </>
           )}
-          <TimeMachineModal
-            isOpen={isTimeMachineOpen}
-            onRequestClose={() => setIsTimeMachineOpen(false)}
-            onSetDate={handleSetDate}
-            onResetDate={handleResetDate}
-            initialDate={timeMachineInitialDate}
-          />
         </>
       )}
     </div>

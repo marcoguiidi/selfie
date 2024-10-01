@@ -4,9 +4,8 @@ import "../css/TimeMachineModal.css";
 
 Modal.setAppElement('#root');
 
-
 const formatDateTimeForInput = (date) => {
-  const adjustedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000); 
+  const adjustedDate = new Date(date.getTime() + 2 * 60 * 60 * 1000);
   return adjustedDate.toISOString().slice(0, 16);
 };
 
@@ -15,7 +14,7 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedDateTime(''); 
+      setSelectedDateTime('');
     }
   }, [isOpen]);
 
@@ -32,7 +31,7 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
   const handleResetDate = async () => {
     const currentDateTime = formatDateTimeForInput(new Date());
     setSelectedDateTime(currentDateTime);
-  
+
     const token = localStorage.getItem('authToken');
     try {
       const response = await fetch('/api/pomodoro/delete-cheated', {
@@ -42,13 +41,12 @@ const TimeMachineModal = ({ isOpen, onRequestClose, onSetDate, onResetDate }) =>
           Authorization: `Bearer ${token}`
         },
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || 'Failed to delete cheated Pomodoro sessions');
       }
       onResetDate();
-  
       console.log('Cheated Pomodoro sessions deleted successfully');
     } catch (error) {
       console.error('Error deleting cheated Pomodoro sessions:', error);
