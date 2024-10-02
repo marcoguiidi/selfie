@@ -305,12 +305,12 @@ const MyCalendar = () => {
                 currentUser={currentUser}
                 onDecline={handleDeclineEvent}
             />
-            <TimeMachineModal
+            {/* <TimeMachineModal
                 isOpen={timeMachineOpen}
                 onRequestClose={() => setTimeMachineOpen(false)}
                 onSetDate={handleSetDate}
                 onResetDate={resetToCurrentDate}
-            />
+            /> */}
         </div>
     );
 };

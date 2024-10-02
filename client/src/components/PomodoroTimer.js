@@ -525,13 +525,13 @@ const AdvancedPomodoroTimer = () => {
               {isTimeMachineActive && (
                 <div className="time-machine-active">Time Machine Active: {currentDate.toLocaleString()}</div>
               )}
-              <TimeMachineModal
+              {/* <TimeMachineModal
                 isOpen={isTimeMachineOpen}
                 onRequestClose={() => setIsTimeMachineOpen(false)}
                 onSetDate={handleSetDate}
                 onResetDate={handleResetDate}
                 initialDate={timeMachineInitialDate}
-              />
+              /> */}
             </>
           )}
         </>
